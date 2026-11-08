@@ -1,0 +1,32 @@
+# REPLATE — Mandatory OOP Concept Tracker
+## Academic Course: Object-Oriented Programming Using Java
+**Package Root:** `com.replate`  
+**Evaluation Standard:** Concrete Java language OOP principles verified by actual source code artifacts.
+
+> [!NOTE]
+> This tracker maintains rigorous academic traceability for the viva examination and project report. Core Java OOP concepts are explicitly distinguished from Spring Framework runtime mechanisms.
+
+---
+
+## 1. Core Object-Oriented Programming Concepts Matrix
+
+| # | OOP Concept | Java Class / Interface | Exact Source File Path | Explanation & Architectural Reason | Project Example & Code Reference | Status |
+|---|---|---|---|---|---|---|
+| **1** | **Encapsulation** | `FoodDonation`, `BaseUser`, `DeliveryTask` | `backend/src/main/java/com/replate/domain/entity/FoodDonation.java` | Hiding internal entity state; providing controlled access via accessors/mutators and defensive domain validation methods (e.g. `isExpired()`, `deductQuantity()`). Prevents invalid state mutations from external layers. | `public synchronized boolean deductQuantity(BigDecimal requestedQty)` ensuring available quantity cannot become negative and automatically transitioning status to `FULLY_ALLOCATED` or `PARTIALLY_ALLOCATED`. | **Implemented** |
+| **2** | **Inheritance** | `BaseEntity` $\to$ `BaseUser`, `FoodDonation`, `FoodRequest`, `Allocation`, `DeliveryTask` | `backend/src/main/java/com/replate/domain/entity/BaseEntity.java` | Genuine "IS-A" hierarchy. Every persistent domain model IS-A `BaseEntity` inheriting primary key surrogate ID, optimistic concurrency `@Version`, and lifecycle timestamps (`createdAt`, `updatedAt`). | `public class BaseUser extends BaseEntity` and `public class FoodDonation extends BaseEntity`. | **Implemented** |
+| **3** | **Polymorphism (Runtime / Dynamic Method Dispatch)** | `Trackable` implemented by `FoodDonation` and `DeliveryTask` | `backend/src/main/java/com/replate/domain/contract/Trackable.java` | Decoupling caller from dynamic runtime implementation. The tracking pipeline treats both `FoodDonation` and `DeliveryTask` polymorphically through the `Trackable` interface, invoking the concrete subclass method at runtime. | `Trackable item = delivery; item.getCurrentStatusDescription();` vs `FoodDonation.getCurrentStatusDescription()` returning progress percentage and human descriptions. | **Implemented** |
+| **4** | **Polymorphism (Compile-Time / Method Overloading)** | `ImpactCalculator` | `backend/src/main/java/com/replate/service/impact/ImpactCalculator.java` | Multiple methods with identical names but differing parameter types and counts to calculate environmental diversion (CO2e offset and INR monetary value) either directly from weight in kg or meal boxes and category heuristics. | `calculateCo2Offset(BigDecimal weightInKg)` vs `calculateCo2Offset(Integer mealBoxes, FoodCategory category)`, and `calculateValueSaved(Integer mealBoxes)` vs `calculateValueSaved(BigDecimal weightInKg)`. | **Implemented** |
+| **5** | **Abstraction & Abstract Classes** | `BaseEntity` | `backend/src/main/java/com/replate/domain/entity/BaseEntity.java` | Abstract classes define foundational identity, optimistic locking versions, and lifecycle timestamps without allowing direct instantiation. Subclasses extend base behavior. | `@MappedSuperclass public abstract class BaseEntity implements Serializable` with protected constructors and encapsulated lifecycle hook callbacks. | **Implemented** |
+| **6** | **Interfaces** | `Trackable`, `Approvable` | `backend/src/main/java/com/replate/domain/contract/Approvable.java` | Declares functional behavioral contracts without specifying storage or implementation details. Allows cross-cutting entities to participate in approval and tracking workflows. | `public interface Approvable { boolean approve(Long approverUserId, String remarks); boolean reject(Long approverUserId, String rejectionReason); boolean isPendingDecision(); }` implemented by `FoodRequest`. | **Implemented** |
+| **7** | **Composition & Embeddables** | `FoodDonation` has `FoodCategory`, `LocationCoordinate` | `backend/src/main/java/com/replate/domain/entity/FoodDonation.java` | "HAS-A" relationship preferred over inheritance for non-is-a dimensions. A user or donation embeds geographic coordinates (`LocationCoordinate`). If the entity is deleted, its embedded location coordinate ceases to exist (composition). | `@Embedded private LocationCoordinate location;` inside `BaseUser` and value-object encapsulation in `LocationCoordinate`. | **Implemented** |
+| **8** | **Constructor Overloading** | `FoodDonation`, `LocationCoordinate`, `BaseUser`, `DeliveryTask` | `backend/src/main/java/com/replate/domain/entity/FoodDonation.java` | Multiple constructors allowing default-state initialization for JPA alongside parameterized constructors with mandatory domain fields. | `public FoodDonation() {}` alongside `public FoodDonation(DonorProfile donor, String title, FoodCategory category, BigDecimal totalQuantity, ...)` | **Implemented** |
+| **9** | **Custom Exception Hierarchy** | `ReplateException`, `DonationExpiredException`, `InsufficientQuantityException`, `ResourceNotFoundException` | `backend/src/main/java/com/replate/exception/ReplateException.java` | Domain-specific checked/unchecked exception tree inheriting from `RuntimeException` for precise, semantic error handling handled by Spring's global exception handler. | `throw new InsufficientQuantityException(requested, available);` carrying standardized machine-readable error codes. | **Implemented** |
+| **10** | **Generics & Collections Framework** | `ApiResponse<T>` | `backend/src/main/java/com/replate/dto/response/ApiResponse.java` | Type-safe generic wrapper providing uniform API responses and payload safety across all REST endpoints. | `public class ApiResponse<T> { private boolean success; private T data; public static <T> ApiResponse<T> success(T data) ... }` | **Implemented** |
+
+---
+
+## 2. Distinction: Java OOP vs. Spring Framework Mechanisms
+
+To ensure clarity for the academic examiner:
+- **Core Java OOP:** Class hierarchies, abstract contracts, runtime polymorphism, encapsulated mutations, custom exception class trees, Java standard generics.
+- **Spring Framework Extensions:** `@Autowired` (Dependency Injection container), `@Transactional` (AOP proxy for transaction management), Spring Data JPA `@Repository` interfaces (dynamic proxy query generation), `@RestController` (HTTP serialization bridge).
