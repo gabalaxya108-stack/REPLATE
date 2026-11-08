@@ -6,3 +6,4 @@ public class EmailAlreadyExistsException extends ReplateException {
         super("An account with email '" + email + "' is already registered.", "EMAIL_ALREADY_EXISTS");
     }
 }
+

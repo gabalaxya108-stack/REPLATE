@@ -11,3 +11,4 @@ public interface VolunteerProfileRepository extends JpaRepository<VolunteerProfi
 
     List<VolunteerProfile> findByVehicleType(String vehicleType);
 }
+

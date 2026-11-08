@@ -90,3 +90,4 @@ public class AuthResponseDTO {
         this.city = city;
     }
 }
+

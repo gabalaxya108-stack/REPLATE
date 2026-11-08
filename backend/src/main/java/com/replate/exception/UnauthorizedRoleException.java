@@ -6,3 +6,4 @@ public class UnauthorizedRoleException extends ReplateException {
         super(message, "UNAUTHORIZED_ROLE_ASSIGNMENT");
     }
 }
+

@@ -17,3 +17,4 @@ public interface AuthenticationService {
 
     UserSummaryDTO getCurrentUser(UserPrincipal principal);
 }
+

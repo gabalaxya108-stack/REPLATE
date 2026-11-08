@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
 import { UserRole } from '../types';
-import { ChefHat, Building2, Bike, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { ChefHat, Building2, Bike, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export const Register: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { register } = useAuth();
+
   const initialRole = (searchParams.get('role')?.toUpperCase() as UserRole) || 'DONOR';
   const [role, setRole] = useState<UserRole>(initialRole === 'ADMIN' ? 'DONOR' : initialRole);
 
@@ -16,6 +20,7 @@ export const Register: React.FC = () => {
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
+  const [addressLine1, setAddressLine1] = useState('');
   const [city, setCity] = useState('Bengaluru');
   const [state, setState] = useState('Karnataka');
   const [pincode, setPincode] = useState('');
@@ -38,32 +43,39 @@ export const Register: React.FC = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
 
   const handleRoleChange = (newRole: UserRole) => {
     setRole(newRole);
     setErrors({});
+    setErrorMessage(null);
     setSuccessNotice(null);
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
 
-    if (!fullName) newErrors.fullName = 'Full legal / entity name is required';
-    if (!email || !/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Valid email is required';
-    if (!phoneNumber || phoneNumber.length < 10) newErrors.phoneNumber = 'Valid 10-digit phone number is required';
+    if (!fullName.trim()) newErrors.fullName = 'Full legal / entity name is required';
+    if (!email.trim() || !/\S+@\S+\.\S+/.test(email.trim())) newErrors.email = 'Valid email is required';
+    if (!phoneNumber.trim() || phoneNumber.trim().length < 10) newErrors.phoneNumber = 'Valid 10-digit phone number is required';
     if (!password || password.length < 6) newErrors.password = 'Password must be at least 6 characters';
-    if (!pincode || pincode.length !== 6) newErrors.pincode = 'Valid 6-digit Indian pincode is required';
+    if (!addressLine1.trim()) newErrors.addressLine1 = 'Street address or locality is required';
+    if (!pincode.trim() || pincode.trim().length !== 6) newErrors.pincode = 'Valid 6-digit Indian pincode is required';
 
     if (role === 'DONOR') {
-      if (!orgName) newErrors.orgName = 'Organization / kitchen name is required';
-      if (!fssaiLicense || fssaiLicense.length < 10) newErrors.fssaiLicense = 'Valid FSSAI license number is required';
+      if (!orgName.trim()) newErrors.orgName = 'Organization / kitchen name is required';
+      if (!fssaiLicense.trim() || fssaiLicense.trim().length < 10) {
+        newErrors.fssaiLicense = 'Valid FSSAI license number is required (min 10 chars)';
+      }
     } else if (role === 'NGO') {
-      if (!ngoName) newErrors.ngoName = 'Registered NGO title is required';
-      if (!darpanId) newErrors.darpanId = 'NITI Aayog Darpan ID is required for verification';
+      if (!ngoName.trim()) newErrors.ngoName = 'Registered NGO title is required';
+      if (!darpanId.trim()) newErrors.darpanId = 'NITI Aayog Darpan ID is required for verification';
     } else if (role === 'VOLUNTEER') {
-      if (!emergencyContact || emergencyContact.length < 10) newErrors.emergencyContact = 'Emergency phone contact is required';
+      if (!emergencyContact.trim() || emergencyContact.trim().length < 10) {
+        newErrors.emergencyContact = 'Emergency phone contact (10 digits) is required';
+      }
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -72,12 +84,48 @@ export const Register: React.FC = () => {
     }
 
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    setErrorMessage(null);
+    setSuccessNotice(null);
+
+    const payload: any = {
+      fullName: fullName.trim(),
+      email: email.trim().toLowerCase(),
+      phoneNumber: phoneNumber.trim(),
+      password,
+      role,
+      addressLine1: addressLine1.trim(),
+      city: city.trim(),
+      state: state.trim(),
+      pincode: pincode.trim(),
+    };
+
+    if (role === 'DONOR') {
+      payload.organizationName = orgName.trim();
+      payload.organizationType = orgType;
+      payload.fssaiLicenseNo = fssaiLicense.trim();
+    } else if (role === 'NGO') {
+      payload.ngoName = ngoName.trim();
+      payload.darpanId = darpanId.trim();
+      payload.registration80g = registration80g.trim() || undefined;
+      payload.dailyBeneficiaryCapacity = parseInt(dailyCapacity, 10) || 50;
+    } else if (role === 'VOLUNTEER') {
+      payload.vehicleType = vehicleType;
+      payload.emergencyContact = emergencyContact.trim();
+    }
+
+    try {
+      const response = await register(payload);
       setSuccessNotice(
-        `Registration request recorded for [${role}] "${fullName}" in ${city}, ${state}. In Phase 2, this commits directly into PostgreSQL via Java Spring Boot authentication services!`
+        `Welcome ${response.fullName}! Your [${role}] profile has been registered and verified in PostgreSQL with JWT authentication.`
       );
-    }, 800);
+      setTimeout(() => {
+        navigate('/explore');
+      }, 1500);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Registration failed. Please check your information and try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -121,6 +169,31 @@ export const Register: React.FC = () => {
 
       {/* Main Registration Form */}
       <Card padding="lg" className="bg-surface shadow-card">
+        {errorMessage && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2.5">
+            <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
+            <div className="space-y-0.5">
+              <span className="font-bold">Registration Error</span>
+              <p className="text-[11px] text-red-600 leading-snug">{errorMessage}</p>
+            </div>
+          </div>
+        )}
+
+        {successNotice && (
+          <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 space-y-2">
+            <div className="font-bold flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+              <span>Institutional Onboarding Completed</span>
+            </div>
+            <p className="text-[12px] text-emerald-700 leading-relaxed">{successNotice}</p>
+            <div className="pt-2">
+              <Link to="/explore" className="font-bold text-forest hover:underline">
+                Proceeding to Dashboard →
+              </Link>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleRegister} className="space-y-6">
           {/* Section: Common Identity */}
           <div className="space-y-4">
@@ -151,7 +224,7 @@ export const Register: React.FC = () => {
                 label="Contact Number (+91)"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="+91-9876543210"
+                placeholder="9876543210"
                 error={errors.phoneNumber}
               />
               <Input
@@ -270,7 +343,7 @@ export const Register: React.FC = () => {
                   label="Emergency Contact Phone Number"
                   value={emergencyContact}
                   onChange={(e) => setEmergencyContact(e.target.value)}
-                  placeholder="+91-9876500112"
+                  placeholder="9876500112"
                   error={errors.emergencyContact}
                 />
               </div>
@@ -282,6 +355,14 @@ export const Register: React.FC = () => {
             <h3 className="text-xs font-bold uppercase tracking-wider text-forest border-b border-border pb-2">
               3. Operational Location
             </h3>
+
+            <Input
+              label="Street Address / Locality / Landmark"
+              value={addressLine1}
+              onChange={(e) => setAddressLine1(e.target.value)}
+              placeholder="e.g. 100 Feet Road, HAL 2nd Stage, Indiranagar"
+              error={errors.addressLine1}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1.5">
@@ -338,21 +419,6 @@ export const Register: React.FC = () => {
             </Button>
           </div>
         </form>
-
-        {successNotice && (
-          <div className="mt-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 space-y-2">
-            <div className="font-bold flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-              <span>Institutional Onboarding Initialized</span>
-            </div>
-            <p className="text-[12px] text-emerald-700 leading-relaxed">{successNotice}</p>
-            <div className="pt-2">
-              <Link to="/login" className="font-bold text-forest hover:underline">
-                Proceed to Login Page →
-              </Link>
-            </div>
-          </div>
-        )}
 
         <div className="mt-6 pt-4 border-t border-border text-center text-xs text-ink-secondary">
           Already registered?{' '}

@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
 import { UserRole } from '../types';
-import { Lock, Mail, ArrowRight, Info } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { Lock, Mail, ArrowRight, Info, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export const Login: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const initialRole = (searchParams.get('role')?.toUpperCase() as UserRole) || 'DONOR';
   const [selectedRole, setSelectedRole] = useState<UserRole>(initialRole);
@@ -15,7 +18,8 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [loginFeedback, setLoginFeedback] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Quick Demo credentials for fast Academic Viva Evaluation
   const demoAccounts: Record<UserRole, { email: string; name: string; org: string }> = {
@@ -46,10 +50,11 @@ export const Login: React.FC = () => {
     setEmail(demoAccounts[role].email);
     setPassword('Password@123');
     setErrors({});
-    setLoginFeedback(null);
+    setErrorMessage(null);
+    setSuccessMessage(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: { email?: string; password?: string } = {};
 
@@ -71,14 +76,21 @@ export const Login: React.FC = () => {
     }
 
     setIsLoading(true);
-    setLoginFeedback(null);
+    setErrorMessage(null);
+    setSuccessMessage(null);
 
-    setTimeout(() => {
+    try {
+      const response = await login({ email, password });
+      setSuccessMessage(`Welcome back, ${response.fullName}! Authentication verified via Spring Boot JWT.`);
+      
+      setTimeout(() => {
+        navigate('/explore');
+      }, 1200);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Invalid email or password. Please try again.');
+    } finally {
       setIsLoading(false);
-      setLoginFeedback(
-        `Authentication evaluated successfully for [${selectedRole}] role (${email}). Phase 1 UI active — Spring Boot 3 JWT endpoint integration proceeds in Phase 2.`
-      );
-    }, 700);
+    }
   };
 
   return (
@@ -93,7 +105,7 @@ export const Login: React.FC = () => {
             Sign in to REPLATE
           </h2>
           <p className="text-xs text-ink-secondary">
-            Select your account type to access your tailored dashboard
+            Select your account type to access your verified dashboard
           </p>
         </div>
 
@@ -122,7 +134,7 @@ export const Login: React.FC = () => {
               <Info className="w-3.5 h-3.5 text-forest" />
               Academic Viva Quick-Select
             </span>
-            <span className="text-[10px] text-ink-secondary">Demo Credentials</span>
+            <span className="text-[10px] text-ink-secondary">PostgreSQL Seed Accounts</span>
           </div>
           <p className="text-xs text-ink-primary">
             Testing as <strong>{demoAccounts[selectedRole].name}</strong> ({demoAccounts[selectedRole].org})
@@ -138,6 +150,26 @@ export const Login: React.FC = () => {
 
         {/* Form Card */}
         <Card padding="lg" className="space-y-5 bg-surface">
+          {errorMessage && (
+            <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
+              <div className="space-y-0.5">
+                <span className="font-bold">Authentication Failed</span>
+                <p className="text-[11px] text-red-600 leading-snug">{errorMessage}</p>
+              </div>
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+              <div className="space-y-0.5">
+                <span className="font-bold">Login Verified</span>
+                <p className="text-[11px] text-emerald-700 leading-snug">{successMessage}</p>
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="Email Address"
@@ -180,17 +212,6 @@ export const Login: React.FC = () => {
               Sign In as {selectedRole}
             </Button>
           </form>
-
-          {/* Feedback message */}
-          {loginFeedback && (
-            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 space-y-1">
-              <div className="font-bold flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                <span>Verification State Initialized</span>
-              </div>
-              <p className="text-[11px] text-emerald-700 leading-snug">{loginFeedback}</p>
-            </div>
-          )}
 
           {/* Footer inside card */}
           <div className="pt-4 border-t border-border text-center text-xs text-ink-secondary">

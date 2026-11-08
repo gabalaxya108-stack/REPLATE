@@ -16,3 +16,4 @@ public interface NgoProfileRepository extends JpaRepository<NgoProfile, Long> {
 
     List<NgoProfile> findByVerificationStatus(String verificationStatus);
 }
+

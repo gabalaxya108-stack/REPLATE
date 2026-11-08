@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../common/Button';
-import { Menu, X, ArrowUpRight } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { Menu, X, ArrowUpRight, LogOut, User as UserIcon } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
 
   const navLinks = [
     { label: 'Live Food Feed', path: '/explore' },
@@ -12,6 +15,27 @@ export const Navbar: React.FC = () => {
     { label: 'Impact Metrics', path: '/#impact' },
     { label: 'Partner Network', path: '/#network' },
   ];
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+    setIsOpen(false);
+  };
+
+  const getRoleBadgeColor = (role?: string) => {
+    switch (role) {
+      case 'ADMIN':
+        return 'bg-amber-100 text-amber-800 border-amber-300';
+      case 'DONOR':
+        return 'bg-emerald-100 text-emerald-800 border-emerald-300';
+      case 'NGO':
+        return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'VOLUNTEER':
+        return 'bg-purple-100 text-purple-800 border-purple-300';
+      default:
+        return 'bg-sage/30 text-forest-dark border-sage/40';
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-warm-bg/95 backdrop-blur-md border-b border-border transition-all">
@@ -40,7 +64,6 @@ export const Navbar: React.FC = () => {
           <div className="w-11 h-11 rounded-xl bg-forest flex items-center justify-center text-white shadow-sm group-hover:bg-forest-dark transition-colors">
             {/* Custom stylized plate/leaf icon */}
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.891h-2.33v6.988C18.343 21.128 22 16.991 22 12c0-5.523-4.477-10-10-10z" className="opacity-0 hidden" />
               <circle cx="12" cy="12" r="9" strokeWidth="2" />
               <path d="M12 7c-2.76 0-5 2.24-5 5 0 2.2 1.43 4.07 3.42 4.71.5.09.83-.22.83-.48v-1.7" />
               <path d="M14.5 10c0-1.38-1.12-2.5-2.5-2.5" />
@@ -76,18 +99,52 @@ export const Navbar: React.FC = () => {
           ))}
         </div>
 
-        {/* CTA Actions */}
+        {/* CTA Actions or Authenticated User Profile */}
         <div className="hidden sm:flex items-center gap-3">
-          <Link to="/login">
-            <Button variant="ghost" size="sm" className="font-medium">
-              Sign In
-            </Button>
-          </Link>
-          <Link to="/register">
-            <Button variant="primary" size="sm" rightIcon={<ArrowUpRight className="w-4 h-4" />}>
-              Get Started
-            </Button>
-          </Link>
+          {isAuthenticated && user ? (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 bg-surface px-3 py-1.5 rounded-xl border border-border shadow-xs">
+                <div className="w-8 h-8 rounded-lg bg-forest/10 text-forest flex items-center justify-center font-bold text-xs">
+                  {user.fullName ? user.fullName.charAt(0).toUpperCase() : <UserIcon className="w-4 h-4" />}
+                </div>
+                <div className="text-left">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-ink-primary truncate max-w-[120px]">
+                      {user.fullName}
+                    </span>
+                    <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded border ${getRoleBadgeColor(user.role)}`}>
+                      {user.role}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-ink-secondary block">
+                    {user.city || 'Verified User'}
+                  </span>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 flex items-center gap-1.5 font-medium"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Link to="/login">
+                <Button variant="ghost" size="sm" className="font-medium">
+                  Sign In
+                </Button>
+              </Link>
+              <Link to="/register">
+                <Button variant="primary" size="sm" rightIcon={<ArrowUpRight className="w-4 h-4" />}>
+                  Get Started
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile menu button */}
@@ -118,16 +175,36 @@ export const Navbar: React.FC = () => {
             ))}
           </div>
           <div className="pt-3 border-t border-border flex flex-col gap-2">
-            <Link to="/login" onClick={() => setIsOpen(false)} className="w-full">
-              <Button variant="outline" className="w-full justify-center">
-                Sign In
-              </Button>
-            </Link>
-            <Link to="/register" onClick={() => setIsOpen(false)} className="w-full">
-              <Button variant="primary" className="w-full justify-center">
-                Get Started
-              </Button>
-            </Link>
+            {isAuthenticated && user ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 p-2 bg-warm-muted rounded-lg">
+                  <div className="w-8 h-8 rounded-lg bg-forest text-white flex items-center justify-center font-bold text-xs">
+                    {user.fullName ? user.fullName.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-ink-primary">{user.fullName}</div>
+                    <div className="text-[10px] text-ink-secondary">{user.email} • {user.role}</div>
+                  </div>
+                </div>
+                <Button variant="outline" className="w-full justify-center text-red-600 hover:bg-red-50" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4 mr-1.5" />
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Link to="/login" onClick={() => setIsOpen(false)} className="w-full">
+                  <Button variant="outline" className="w-full justify-center">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/register" onClick={() => setIsOpen(false)} className="w-full">
+                  <Button variant="primary" className="w-full justify-center">
+                    Get Started
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

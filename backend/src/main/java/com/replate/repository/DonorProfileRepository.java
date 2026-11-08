@@ -13,3 +13,4 @@ public interface DonorProfileRepository extends JpaRepository<DonorProfile, Long
 
     boolean existsByFssaiLicenseNo(String fssaiLicenseNo);
 }
+

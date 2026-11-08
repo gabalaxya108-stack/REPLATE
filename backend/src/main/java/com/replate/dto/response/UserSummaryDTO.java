@@ -107,3 +107,4 @@ public class UserSummaryDTO {
         this.profileDetails = profileDetails;
     }
 }
+

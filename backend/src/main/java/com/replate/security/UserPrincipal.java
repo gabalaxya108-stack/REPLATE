@@ -87,3 +87,4 @@ public class UserPrincipal implements UserDetails {
         return !"SUSPENDED".equalsIgnoreCase(status);
     }
 }
+

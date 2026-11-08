@@ -244,3 +244,4 @@ class AuthenticationFlowIntegrationTest {
         assertFalse(meResponse.contains("Password@123"), "/me profile response must NEVER expose raw password");
     }
 }
+
