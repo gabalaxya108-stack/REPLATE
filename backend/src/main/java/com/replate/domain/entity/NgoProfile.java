@@ -3,10 +3,11 @@ package com.replate.domain.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import org.springframework.data.domain.Persistable;
 
 @Entity
 @Table(name = "ngo_profile")
-public class NgoProfile {
+public class NgoProfile implements Persistable<Long> {
 
     @Id
     @Column(name = "user_id")
@@ -16,6 +17,9 @@ public class NgoProfile {
     @MapsId
     @JoinColumn(name = "user_id")
     private BaseUser user;
+
+    @Transient
+    private boolean isNew = true;
 
     @NotBlank
     @Column(name = "ngo_name", nullable = false, length = 150)
@@ -50,6 +54,22 @@ public class NgoProfile {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    @Override
+    public Long getId() {
+        return this.userId;
+    }
+
+    @Override
+    public boolean isNew() {
+        return this.isNew;
+    }
+
+    @PostLoad
+    @PostPersist
+    void markNotNew() {
+        this.isNew = false;
     }
 
     public BaseUser getUser() {

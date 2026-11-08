@@ -3,10 +3,11 @@ package com.replate.domain.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
+import org.springframework.data.domain.Persistable;
 
 @Entity
 @Table(name = "volunteer_profile")
-public class VolunteerProfile {
+public class VolunteerProfile implements Persistable<Long> {
 
     @Id
     @Column(name = "user_id")
@@ -16,6 +17,9 @@ public class VolunteerProfile {
     @MapsId
     @JoinColumn(name = "user_id")
     private BaseUser user;
+
+    @Transient
+    private boolean isNew = true;
 
     @NotBlank
     @Column(name = "vehicle_type", nullable = false, length = 40)
@@ -44,6 +48,22 @@ public class VolunteerProfile {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    @Override
+    public Long getId() {
+        return this.userId;
+    }
+
+    @Override
+    public boolean isNew() {
+        return this.isNew;
+    }
+
+    @PostLoad
+    @PostPersist
+    void markNotNew() {
+        this.isNew = false;
     }
 
     public BaseUser getUser() {

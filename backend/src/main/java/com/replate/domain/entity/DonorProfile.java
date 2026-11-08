@@ -2,13 +2,14 @@ package com.replate.domain.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.data.domain.Persistable;
 
 /**
  * Demonstrates Java OOP One-to-One Association and Encapsulation.
  */
 @Entity
 @Table(name = "donor_profile")
-public class DonorProfile {
+public class DonorProfile implements Persistable<Long> {
 
     @Id
     @Column(name = "user_id")
@@ -18,6 +19,9 @@ public class DonorProfile {
     @MapsId
     @JoinColumn(name = "user_id")
     private BaseUser user;
+
+    @Transient
+    private boolean isNew = true;
 
     @NotBlank
     @Column(name = "organization_name", nullable = false, length = 150)
@@ -38,10 +42,26 @@ public class DonorProfile {
 
     public DonorProfile(BaseUser user, String organizationName, String organizationType, String fssaiLicenseNo) {
         this.user = user;
-        this.userId = user.getId();
+        this.userId = user != null ? user.getId() : null;
         this.organizationName = organizationName;
         this.organizationType = organizationType;
         this.fssaiLicenseNo = fssaiLicenseNo;
+    }
+
+    @Override
+    public Long getId() {
+        return this.userId;
+    }
+
+    @Override
+    public boolean isNew() {
+        return this.isNew;
+    }
+
+    @PostLoad
+    @PostPersist
+    void markNotNew() {
+        this.isNew = false;
     }
 
     public Long getUserId() {

@@ -19,3 +19,4 @@ class PasswordEncoderTest {
         assertTrue(encoder.matches(rawPassword, encoded), "Encoded password should match raw password");
     }
 }
+
