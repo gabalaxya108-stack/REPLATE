@@ -64,3 +64,4 @@ public class ImpactCalculator {
         return estimatedMeals.multiply(AVG_MEAL_COST_INR).setScale(2, RoundingMode.HALF_UP);
     }
 }
+

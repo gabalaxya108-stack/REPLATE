@@ -94,3 +94,4 @@ public class LocationCoordinate implements Serializable {
         return String.format("%s, %s, %s - %s", addressLine1, city, state, pincode);
     }
 }
+

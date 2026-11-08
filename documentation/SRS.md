@@ -91,3 +91,4 @@ REPLATE solves this through a transactional state-machine engine powered by Java
 ### 4.3 Usability & Design Guidelines
 - Warm, human-centric visual design using forest green (`#245C45`), sage (`#A8BFA8`), and terracotta (`#D98A68`).
 - Mobile-first responsive layouts matching contemporary Indian accessibility standards.
+

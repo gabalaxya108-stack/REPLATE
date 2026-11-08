@@ -6,3 +6,4 @@ public enum AllocationStatus {
     DELIVERED,
     CANCELLED
 }
+

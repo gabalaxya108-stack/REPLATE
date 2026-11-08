@@ -94,3 +94,4 @@ flowchart TD
 ### 3.3 Database Layer (`/database`)
 - **Engine:** PostgreSQL 15+.
 - **Integrity:** Strict relational foreign key constraints, check constraints (e.g. quantity $> 0$, expiry $>$ created_at), and pessimistic row locking (`SELECT FOR UPDATE`) on allocation commits to eliminate double-claim race conditions.
+

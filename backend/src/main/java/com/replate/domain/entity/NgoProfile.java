@@ -103,3 +103,4 @@ public class NgoProfile {
         this.verificationStatus = verificationStatus;
     }
 }
+

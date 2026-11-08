@@ -10,3 +10,4 @@ public class ResourceNotFoundException extends ReplateException {
         super(message, "RESOURCE_NOT_FOUND");
     }
 }
+

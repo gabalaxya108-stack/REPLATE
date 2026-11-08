@@ -95,3 +95,4 @@ public class DonorProfile {
         this.operatingHours = operatingHours;
     }
 }
+

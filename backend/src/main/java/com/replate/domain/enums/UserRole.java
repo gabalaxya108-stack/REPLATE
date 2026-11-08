@@ -10,3 +10,4 @@ public enum UserRole {
     VOLUNTEER,
     ADMIN
 }
+

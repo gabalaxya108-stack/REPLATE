@@ -139,8 +139,42 @@ Finalized claims and transport executions.
 
 ---
 
-## 3. Database Integrity Constraints & Concurrency Rules
+## 4. Database Setup & Connectivity Guide
 
-1. **Foreign Key Restraints:** Cascading deletes are prevented on commercial transactions to preserve forensic audit trails.
-2. **Optimistic Locking:** The `version` column on `food_donation` ensures that concurrent requests evaluate available quantity against a deterministic version, throwing `OptimisticLockingFailureException` on stale writes.
-3. **Pessimistic Fallback:** High-concurrency allocations execute inside `@Transactional(isolation = Isolation.REPEATABLE_READ)` with `SELECT ... FOR UPDATE` locks.
+### 4.1 Prerequisites
+- PostgreSQL 14+ running locally (e.g. via Homebrew on macOS: `brew services start postgresql@15`).
+- Superuser or role matching your local environment (default: `laxyagaba` or standard `postgres`).
+
+### 4.2 Database Initialization
+Execute the following commands from the project root:
+
+```bash
+# 1. Create database
+createdb replate_db
+
+# 2. Run DDL schema
+psql -d replate_db -f database/schema.sql
+
+# 3. Seed initial Indian institutions (Saravana Bhavan, Haldiram's, RHA, etc.)
+psql -d replate_db -f database/seed-data.sql
+```
+
+### 4.3 Environment Configuration (`application.yml`)
+The Spring Boot application connects via HikariCP using standard environment variables:
+
+| Environment Variable | Description | Default Fallback |
+| :--- | :--- | :--- |
+| `DB_HOST` | PostgreSQL host address | `localhost` |
+| `DB_PORT` | PostgreSQL TCP port | `5432` |
+| `DB_NAME` | Database schema name | `replate_db` |
+| `DB_USERNAME` | Database username | `laxyagaba` |
+| `DB_PASSWORD` | Database password | *(empty for local trust)* |
+
+### 4.4 Verification
+Run the integrated test to verify active connectivity and JPA entity-schema validation:
+```bash
+cd backend
+mvn test -Dtest=ReplateApplicationTests
+```
+
+

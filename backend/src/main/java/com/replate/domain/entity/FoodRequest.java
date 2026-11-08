@@ -140,3 +140,4 @@ public class FoodRequest extends BaseEntity implements Approvable {
         this.rejectionReason = rejectionReason;
     }
 }
+

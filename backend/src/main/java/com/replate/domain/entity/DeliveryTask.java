@@ -1,6 +1,7 @@
 package com.replate.domain.entity;
 
 import com.replate.domain.contract.Trackable;
+import com.replate.domain.enums.DeliveryStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -24,9 +25,10 @@ public class DeliveryTask extends BaseEntity implements Trackable {
     @JoinColumn(name = "volunteer_id")
     private VolunteerProfile volunteer;
 
-    @NotBlank
+    @NotNull
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
-    private String status = "UNASSIGNED";
+    private DeliveryStatus status = DeliveryStatus.UNASSIGNED;
 
     @NotBlank
     @Column(name = "pickup_otp", nullable = false, length = 6)
@@ -54,13 +56,13 @@ public class DeliveryTask extends BaseEntity implements Trackable {
         this.allocation = allocation;
         this.pickupOtp = pickupOtp;
         this.deliveryOtp = deliveryOtp;
-        this.status = "UNASSIGNED";
+        this.status = DeliveryStatus.UNASSIGNED;
     }
 
     // Business Methods (Encapsulation)
     public boolean verifyPickup(String enteredOtp) {
-        if (this.pickupOtp.equals(enteredOtp) && "ASSIGNED".equalsIgnoreCase(this.status)) {
-            this.status = "PICKED_UP";
+        if (this.pickupOtp != null && this.pickupOtp.equals(enteredOtp) && this.status == DeliveryStatus.ASSIGNED) {
+            this.status = DeliveryStatus.PICKED_UP;
             this.pickedUpAt = Instant.now();
             return true;
         }
@@ -68,8 +70,8 @@ public class DeliveryTask extends BaseEntity implements Trackable {
     }
 
     public boolean verifyDelivery(String enteredOtp) {
-        if (this.deliveryOtp.equals(enteredOtp) && "PICKED_UP".equalsIgnoreCase(this.status)) {
-            this.status = "DELIVERED";
+        if (this.deliveryOtp != null && this.deliveryOtp.equals(enteredOtp) && this.status == DeliveryStatus.PICKED_UP) {
+            this.status = DeliveryStatus.DELIVERED;
             this.deliveredAt = Instant.now();
             return true;
         }
@@ -80,29 +82,28 @@ public class DeliveryTask extends BaseEntity implements Trackable {
     @Override
     public String getCurrentStatusDescription() {
         return switch (this.status) {
-            case "UNASSIGNED" -> "Awaiting volunteer assignment in the cluster";
-            case "ASSIGNED" -> "Volunteer en route to donor kitchen for pickup";
-            case "PICKED_UP" -> "Food picked up; in transit to NGO beneficiary site";
-            case "DELIVERED" -> "Successfully delivered and confirmed by NGO";
-            case "FAILED" -> "Delivery could not be completed";
-            default -> "Status: " + this.status;
+            case UNASSIGNED -> "Awaiting volunteer assignment in the cluster";
+            case ASSIGNED -> "Volunteer en route to donor kitchen for pickup";
+            case PICKED_UP -> "Food picked up; in transit to NGO beneficiary site";
+            case DELIVERED -> "Successfully delivered and confirmed by NGO";
+            case FAILED -> "Delivery could not be completed";
         };
     }
 
     @Override
     public int getProgressPercentage() {
         return switch (this.status) {
-            case "UNASSIGNED" -> 10;
-            case "ASSIGNED" -> 35;
-            case "PICKED_UP" -> 70;
-            case "DELIVERED" -> 100;
-            default -> 0;
+            case UNASSIGNED -> 10;
+            case ASSIGNED -> 35;
+            case PICKED_UP -> 70;
+            case DELIVERED -> 100;
+            case FAILED -> 0;
         };
     }
 
     @Override
     public boolean isTerminal() {
-        return "DELIVERED".equalsIgnoreCase(this.status) || "FAILED".equalsIgnoreCase(this.status);
+        return this.status == DeliveryStatus.DELIVERED || this.status == DeliveryStatus.FAILED;
     }
 
     // Getters and Setters
@@ -120,16 +121,16 @@ public class DeliveryTask extends BaseEntity implements Trackable {
 
     public void setVolunteer(VolunteerProfile volunteer) {
         this.volunteer = volunteer;
-        if (volunteer != null && "UNASSIGNED".equalsIgnoreCase(this.status)) {
-            this.status = "ASSIGNED";
+        if (volunteer != null && this.status == DeliveryStatus.UNASSIGNED) {
+            this.status = DeliveryStatus.ASSIGNED;
         }
     }
 
-    public String getStatus() {
+    public DeliveryStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(DeliveryStatus status) {
         this.status = status;
     }
 
@@ -173,3 +174,4 @@ public class DeliveryTask extends BaseEntity implements Trackable {
         this.notes = notes;
     }
 }
+

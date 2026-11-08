@@ -20,3 +20,4 @@ public interface Trackable {
      */
     boolean isTerminal();
 }
+

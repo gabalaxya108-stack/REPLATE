@@ -74,3 +74,4 @@ public class Allocation extends BaseEntity {
         this.status = status;
     }
 }
+

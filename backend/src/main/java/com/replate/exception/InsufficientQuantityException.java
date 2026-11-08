@@ -13,3 +13,4 @@ public class InsufficientQuantityException extends ReplateException {
         super(message, "INSUFFICIENT_QUANTITY");
     }
 }
+

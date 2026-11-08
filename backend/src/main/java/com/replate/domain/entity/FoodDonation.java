@@ -73,6 +73,10 @@ public class FoodDonation extends BaseEntity implements Trackable {
     @Column(name = "status", nullable = false, length = 30)
     private DonationStatus status = DonationStatus.AVAILABLE;
 
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version = 0L;
+
     // Constructors (Constructor Overloading)
     public FoodDonation() {
         super();
@@ -242,4 +246,13 @@ public class FoodDonation extends BaseEntity implements Trackable {
     public void setStatus(DonationStatus status) {
         this.status = status;
     }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
+    }
 }
+

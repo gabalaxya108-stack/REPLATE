@@ -3,16 +3,16 @@
 -- Realistic initial dataset for local testing and viva demonstrations
 -- ====================================================================
 
--- 1. Base Users (BCrypt hashed password for 'Password@123' is $2a$10$eO... or placeholder)
+-- 1. Base Users (BCrypt hashed password for 'Password@123': $2a$10$/DIyxQtL.6ii82a30k0p8uGq/Oj.smE4MU0Dc8vxi9gjFb/WeXbbS)
 INSERT INTO app_user (id, email, password_hash, phone_number, full_name, role, status, address_line1, city, state, pincode, latitude, longitude) VALUES
-(1, 'contact@saravanabhavan.in', '$2a$10$wE9X.kOiqJv8d5hZlBknw.V7QeXJjS0JcW6UqEbmS2N4W8fV7/Rme', '+91-8025211234', 'Saravana Bhavan Foods Pvt Ltd', 'DONOR', 'ACTIVE', '100 Feet Road, Indiranagar', 'Bengaluru', 'Karnataka', '560038', 12.9784, 77.6408),
-(2, 'events@haldiramsdelhi.com', '$2a$10$wE9X.kOiqJv8d5hZlBknw.V7QeXJjS0JcW6UqEbmS2N4W8fV7/Rme', '+91-1143529900', 'Haldirams Sweets & Catering', 'DONOR', 'ACTIVE', 'B-Block, Connaught Place', 'New Delhi', 'Delhi', '110001', 28.6328, 77.2197),
-(3, 'banquets@tridentmumbai.com', '$2a$10$wE9X.kOiqJv8d5hZlBknw.V7QeXJjS0JcW6UqEbmS2N4W8fV7/Rme', '+91-2266324343', 'Trident Nariman Point Banquets', 'DONOR', 'ACTIVE', 'Nariman Point, Marine Drive', 'Mumbai', 'Maharashtra', '400021', 18.9274, 72.8211),
-(4, 'foodrescue@robinhoodarmy.org', '$2a$10$wE9X.kOiqJv8d5hZlBknw.V7QeXJjS0JcW6UqEbmS2N4W8fV7/Rme', '+91-9876500123', 'Robin Hood Army (Bengaluru)', 'NGO', 'ACTIVE', 'Koramangala 4th Block', 'Bengaluru', 'Karnataka', '560034', 12.9352, 77.6245),
-(5, 'relief@rotibankmumbai.org', '$2a$10$wE9X.kOiqJv8d5hZlBknw.V7QeXJjS0JcW6UqEbmS2N4W8fV7/Rme', '+91-9820011223', 'Roti Bank Mumbai Foundation', 'NGO', 'ACTIVE', 'Opposite Dadar Central Station', 'Mumbai', 'Maharashtra', '400014', 19.0178, 72.8478),
-(6, 'aarav.sharma@gmail.com', '$2a$10$wE9X.kOiqJv8d5hZlBknw.V7QeXJjS0JcW6UqEbmS2N4W8fV7/Rme', '+91-9811234567', 'Aarav Sharma', 'VOLUNTEER', 'ACTIVE', 'Defence Colony', 'New Delhi', 'Delhi', '110024', 28.5729, 77.2289),
-(7, 'pooja.deshmukh@gmail.com', '$2a$10$wE9X.kOiqJv8d5hZlBknw.V7QeXJjS0JcW6UqEbmS2N4W8fV7/Rme', '+91-9769876543', 'Pooja Deshmukh', 'VOLUNTEER', 'ACTIVE', 'Shivaji Park, Dadar West', 'Mumbai', 'Maharashtra', '400028', 19.0269, 72.8373),
-(8, 'admin@replate.org', '$2a$10$wE9X.kOiqJv8d5hZlBknw.V7QeXJjS0JcW6UqEbmS2N4W8fV7/Rme', '+91-8012345678', 'Replate Systems Admin', 'ADMIN', 'ACTIVE', 'Koramangala Incubator Hub', 'Bengaluru', 'Karnataka', '560095', 12.9345, 77.6190);
+(1, 'contact@saravanabhavan.in', '$2a$10$/DIyxQtL.6ii82a30k0p8uGq/Oj.smE4MU0Dc8vxi9gjFb/WeXbbS', '+91-8025211234', 'Saravana Bhavan Foods Pvt Ltd', 'DONOR', 'ACTIVE', '100 Feet Road, Indiranagar', 'Bengaluru', 'Karnataka', '560038', 12.9784, 77.6408),
+(2, 'events@haldiramsdelhi.com', '$2a$10$/DIyxQtL.6ii82a30k0p8uGq/Oj.smE4MU0Dc8vxi9gjFb/WeXbbS', '+91-1143529900', 'Haldirams Sweets & Catering', 'DONOR', 'ACTIVE', 'B-Block, Connaught Place', 'New Delhi', 'Delhi', '110001', 28.6328, 77.2197),
+(3, 'banquets@tridentmumbai.com', '$2a$10$/DIyxQtL.6ii82a30k0p8uGq/Oj.smE4MU0Dc8vxi9gjFb/WeXbbS', '+91-2266324343', 'Trident Nariman Point Banquets', 'DONOR', 'ACTIVE', 'Nariman Point, Marine Drive', 'Mumbai', 'Maharashtra', '400021', 18.9274, 72.8211),
+(4, 'foodrescue@robinhoodarmy.org', '$2a$10$/DIyxQtL.6ii82a30k0p8uGq/Oj.smE4MU0Dc8vxi9gjFb/WeXbbS', '+91-9876500123', 'Robin Hood Army (Bengaluru)', 'NGO', 'ACTIVE', 'Koramangala 4th Block', 'Bengaluru', 'Karnataka', '560034', 12.9352, 77.6245),
+(5, 'relief@rotibankmumbai.org', '$2a$10$/DIyxQtL.6ii82a30k0p8uGq/Oj.smE4MU0Dc8vxi9gjFb/WeXbbS', '+91-9820011223', 'Roti Bank Mumbai Foundation', 'NGO', 'ACTIVE', 'Opposite Dadar Central Station', 'Mumbai', 'Maharashtra', '400014', 19.0178, 72.8478),
+(6, 'aarav.sharma@gmail.com', '$2a$10$/DIyxQtL.6ii82a30k0p8uGq/Oj.smE4MU0Dc8vxi9gjFb/WeXbbS', '+91-9811234567', 'Aarav Sharma', 'VOLUNTEER', 'ACTIVE', 'Defence Colony', 'New Delhi', 'Delhi', '110024', 28.5729, 77.2289),
+(7, 'pooja.deshmukh@gmail.com', '$2a$10$/DIyxQtL.6ii82a30k0p8uGq/Oj.smE4MU0Dc8vxi9gjFb/WeXbbS', '+91-9769876543', 'Pooja Deshmukh', 'VOLUNTEER', 'ACTIVE', 'Shivaji Park, Dadar West', 'Mumbai', 'Maharashtra', '400028', 19.0269, 72.8373),
+(8, 'admin@replate.org', '$2a$10$/DIyxQtL.6ii82a30k0p8uGq/Oj.smE4MU0Dc8vxi9gjFb/WeXbbS', '+91-8012345678', 'Replate Systems Admin', 'ADMIN', 'ACTIVE', 'Koramangala Incubator Hub', 'Bengaluru', 'Karnataka', '560095', 12.9345, 77.6190);
 
 -- Sync sequence for app_user
 SELECT setval('app_user_id_seq', (SELECT MAX(id) FROM app_user));
@@ -59,3 +59,4 @@ INSERT INTO delivery_task (id, allocation_id, volunteer_id, status, pickup_otp, 
 (1, 1, 6, 'PICKED_UP', '492810', '710345', NOW() - INTERVAL '25 minutes', NULL, 'Food temperature verified at 65°C upon pickup. Packed securely in thermo-insulated carriers.');
 
 SELECT setval('delivery_task_id_seq', (SELECT MAX(id) FROM delivery_task));
+

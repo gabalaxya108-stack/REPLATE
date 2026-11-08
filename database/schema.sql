@@ -77,6 +77,7 @@ CREATE TABLE food_donation (
     status VARCHAR(30) NOT NULL DEFAULT 'AVAILABLE' CHECK (status IN ('AVAILABLE', 'PARTIALLY_ALLOCATED', 'FULLY_ALLOCATED', 'COMPLETED', 'EXPIRED', 'CANCELLED')),
     version BIGINT NOT NULL DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT check_expiry_after_prep CHECK (expiry_time > preparation_time),
     CONSTRAINT check_available_lte_total CHECK (available_quantity <= total_quantity)
 );
@@ -90,7 +91,8 @@ CREATE TABLE food_request (
     intended_beneficiaries TEXT NOT NULL,
     status VARCHAR(30) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED')),
     rejection_reason VARCHAR(255),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 7. Allocation Record
@@ -100,7 +102,8 @@ CREATE TABLE allocation (
     donation_id BIGINT NOT NULL REFERENCES food_donation(id) ON DELETE RESTRICT,
     allocated_quantity NUMERIC(10,2) NOT NULL CHECK (allocated_quantity > 0),
     status VARCHAR(30) NOT NULL DEFAULT 'AWAITING_PICKUP' CHECK (status IN ('AWAITING_PICKUP', 'IN_TRANSIT', 'DELIVERED', 'CANCELLED')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 8. Delivery Task
@@ -113,7 +116,9 @@ CREATE TABLE delivery_task (
     delivery_otp VARCHAR(6) NOT NULL,
     picked_up_at TIMESTAMP WITH TIME ZONE,
     delivered_at TIMESTAMP WITH TIME ZONE,
-    notes TEXT
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 9. System Audit Log
@@ -135,3 +140,4 @@ CREATE INDEX idx_food_request_donation ON food_request(donation_id);
 CREATE INDEX idx_food_request_ngo ON food_request(ngo_id);
 CREATE INDEX idx_allocation_donation ON allocation(donation_id);
 CREATE INDEX idx_delivery_volunteer ON delivery_task(volunteer_id);
+

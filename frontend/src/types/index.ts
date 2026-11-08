@@ -52,3 +52,4 @@ export interface FoodDonationItem {
   status: DonationStatus;
   createdAt: string;
 }
+

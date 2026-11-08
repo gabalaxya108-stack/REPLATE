@@ -113,3 +113,4 @@ public class BaseUser extends BaseEntity {
         this.location = location;
     }
 }
+

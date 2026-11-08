@@ -26,3 +26,4 @@ public enum FoodCategory {
         return defaultSafeHours;
     }
 }
+

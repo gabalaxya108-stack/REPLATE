@@ -17,14 +17,10 @@ public abstract class BaseEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Version
-    @Column(name = "version", nullable = false)
-    private Long version = 0L;
-
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private Instant updatedAt;
 
     // Protected constructor for JPA and subclass instantiation (Encapsulation)
@@ -55,16 +51,12 @@ public abstract class BaseEntity implements Serializable {
         this.id = id;
     }
 
-    public Long getVersion() {
-        return version;
-    }
-
-    public void setVersion(Long version) {
-        this.version = version;
-    }
-
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 
     public Instant getUpdatedAt() {
@@ -87,3 +79,4 @@ public abstract class BaseEntity implements Serializable {
         return getClass().hashCode();
     }
 }
+

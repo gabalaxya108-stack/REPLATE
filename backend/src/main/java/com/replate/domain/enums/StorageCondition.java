@@ -15,3 +15,4 @@ public enum StorageCondition {
         return description;
     }
 }
+

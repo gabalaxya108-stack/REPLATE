@@ -10,3 +10,4 @@ public class DonationExpiredException extends ReplateException {
         super("The donation with ID " + donationId + " has surpassed its safe consumption expiry threshold.", "DONATION_EXPIRED");
     }
 }
+
