@@ -2,15 +2,18 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../common/Button';
 import { useAuth } from '../../context/AuthContext';
-import { Menu, X, ArrowUpRight, LogOut, User as UserIcon } from 'lucide-react';
+import { Menu, X, ArrowUpRight, LogOut, User as UserIcon, PlusCircle, ChefHat } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
+  const isDonor = user?.role === 'DONOR';
+
   const navLinks = [
     { label: 'Live Food Feed', path: '/explore' },
+    ...(isDonor ? [{ label: 'My Food Listings', path: '/donor/donations' }] : []),
     { label: 'How Replate Works', path: '/#how-it-works' },
     { label: 'Impact Metrics', path: '/#impact' },
     { label: 'Partner Network', path: '/#network' },
@@ -62,7 +65,6 @@ export const Navbar: React.FC = () => {
         {/* Brand Identity */}
         <Link to="/" className="flex items-center gap-3 group">
           <div className="w-11 h-11 rounded-xl bg-forest flex items-center justify-center text-white shadow-sm group-hover:bg-forest-dark transition-colors">
-            {/* Custom stylized plate/leaf icon */}
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="9" strokeWidth="2" />
               <path d="M12 7c-2.76 0-5 2.24-5 5 0 2.2 1.43 4.07 3.42 4.71.5.09.83-.22.83-.48v-1.7" />
@@ -86,7 +88,7 @@ export const Navbar: React.FC = () => {
         </Link>
 
         {/* Desktop Navigation Links */}
-        <div className="hidden lg:flex items-center gap-8">
+        <div className="hidden lg:flex items-center gap-7">
           {navLinks.map((link) => (
             <Link
               key={link.path}
@@ -103,9 +105,17 @@ export const Navbar: React.FC = () => {
         <div className="hidden sm:flex items-center gap-3">
           {isAuthenticated && user ? (
             <div className="flex items-center gap-3">
+              {isDonor && (
+                <Link to="/donor/donations">
+                  <Button variant="primary" size="sm" leftIcon={<PlusCircle className="w-4 h-4" />}>
+                    Donate Food
+                  </Button>
+                </Link>
+              )}
+
               <div className="flex items-center gap-2 bg-surface px-3 py-1.5 rounded-xl border border-border shadow-xs">
                 <div className="w-8 h-8 rounded-lg bg-forest/10 text-forest flex items-center justify-center font-bold text-xs">
-                  {user.fullName ? user.fullName.charAt(0).toUpperCase() : <UserIcon className="w-4 h-4" />}
+                  {isDonor ? <ChefHat className="w-4 h-4" /> : user.fullName ? user.fullName.charAt(0).toUpperCase() : <UserIcon className="w-4 h-4" />}
                 </div>
                 <div className="text-left">
                   <div className="flex items-center gap-1.5">
@@ -121,6 +131,7 @@ export const Navbar: React.FC = () => {
                   </span>
                 </div>
               </div>
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -177,6 +188,14 @@ export const Navbar: React.FC = () => {
           <div className="pt-3 border-t border-border flex flex-col gap-2">
             {isAuthenticated && user ? (
               <div className="space-y-3">
+                {isDonor && (
+                  <Link to="/donor/donations" onClick={() => setIsOpen(false)} className="w-full">
+                    <Button variant="primary" className="w-full justify-center">
+                      <PlusCircle className="w-4 h-4 mr-1.5" />
+                      Donate Food Now
+                    </Button>
+                  </Link>
+                )}
                 <div className="flex items-center gap-2 p-2 bg-warm-muted rounded-lg">
                   <div className="w-8 h-8 rounded-lg bg-forest text-white flex items-center justify-center font-bold text-xs">
                     {user.fullName ? user.fullName.charAt(0).toUpperCase() : 'U'}

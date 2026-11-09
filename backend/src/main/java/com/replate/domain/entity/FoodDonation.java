@@ -125,6 +125,7 @@ public class FoodDonation extends BaseEntity implements Trackable {
     @Override
     public String getCurrentStatusDescription() {
         return switch (this.status) {
+            case DRAFT -> "Draft listing (not yet published)";
             case AVAILABLE -> "Available for NGOs (" + this.availableQuantity + " " + this.quantityUnit.getLabel() + " remaining)";
             case PARTIALLY_ALLOCATED -> "Partially claimed (" + this.availableQuantity + " remaining)";
             case FULLY_ALLOCATED -> "Fully allocated to NGO partners";
@@ -140,6 +141,7 @@ public class FoodDonation extends BaseEntity implements Trackable {
         if (this.status == DonationStatus.FULLY_ALLOCATED) return 75;
         if (this.status == DonationStatus.PARTIALLY_ALLOCATED) return 50;
         if (this.status == DonationStatus.AVAILABLE) return 25;
+        if (this.status == DonationStatus.DRAFT) return 10;
         return 0;
     }
 
@@ -148,6 +150,33 @@ public class FoodDonation extends BaseEntity implements Trackable {
         return this.status == DonationStatus.COMPLETED ||
                this.status == DonationStatus.EXPIRED ||
                this.status == DonationStatus.CANCELLED;
+    }
+
+    public void publish() {
+        if (this.status != DonationStatus.DRAFT) {
+            throw new com.replate.exception.ReplateException("Only DRAFT donations can be published. Current status: " + this.status);
+        }
+        if (isExpired()) {
+            throw new com.replate.exception.DonationExpiredException("Cannot publish a donation with an expiry time in the past.");
+        }
+        if (this.availableQuantity.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new com.replate.exception.ReplateException("Cannot publish a donation with zero or negative available quantity.");
+        }
+        this.status = DonationStatus.AVAILABLE;
+    }
+
+    public void cancel() {
+        if (this.status == DonationStatus.COMPLETED || this.status == DonationStatus.CANCELLED || this.status == DonationStatus.EXPIRED) {
+            throw new com.replate.exception.ReplateException("Cannot cancel a donation that is already " + this.status);
+        }
+        if (this.status == DonationStatus.FULLY_ALLOCATED) {
+            throw new com.replate.exception.ReplateException("Cannot cancel a fully allocated donation with pending deliveries.");
+        }
+        this.status = DonationStatus.CANCELLED;
+    }
+
+    public boolean canBeEditedByDonor() {
+        return this.status == DonationStatus.DRAFT || this.status == DonationStatus.AVAILABLE;
     }
 
     // Getters and Setters

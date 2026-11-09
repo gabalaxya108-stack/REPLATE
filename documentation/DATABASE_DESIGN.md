@@ -103,7 +103,7 @@ Core food listing published by donors.
 | `preparation_time` | `TIMESTAMP WITH TIME ZONE` | NOT NULL | When food was cooked/packed |
 | `expiry_time` | `TIMESTAMP WITH TIME ZONE` | NOT NULL | Safe consumption threshold |
 | `pickup_notes` | `TEXT` | NULLABLE | Packaging, loading gate, or contact person |
-| `status` | `VARCHAR(30)` | NOT NULL DEFAULT 'AVAILABLE' | `AVAILABLE`, `PARTIALLY_ALLOCATED`, `FULLY_ALLOCATED`, `COMPLETED`, `EXPIRED`, `CANCELLED` |
+| `status` | `VARCHAR(30)` | NOT NULL DEFAULT 'AVAILABLE' | `DRAFT`, `AVAILABLE`, `PARTIALLY_ALLOCATED`, `FULLY_ALLOCATED`, `COMPLETED`, `EXPIRED`, `CANCELLED` |
 | `version` | `BIGINT` | NOT NULL DEFAULT 0 | Optimistic locking counter |
 | `created_at` | `TIMESTAMP WITH TIME ZONE` | DEFAULT NOW() | Submission timestamp |
 

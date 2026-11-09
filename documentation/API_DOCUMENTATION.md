@@ -187,3 +187,103 @@ In the event of an error (HTTP 400, 401, 403, 404, 409, 500), `success` is `fals
   "timestamp": "2026-11-08T09:20:02.106892Z"
 }
 ```
+
+---
+
+## 4. Food Donation Lifecycle & Inventory Endpoints
+
+### 4.1 Create Food Donation Listing
+- **Method:** `POST`
+- **URL:** `/donations`
+- **Access:** `DONOR`, `ADMIN` (`Authorization: Bearer <token>`)
+- **Parameters:** `publishImmediately` (boolean, default `false`)
+- **Rules:**
+  - `totalQuantity` must be strictly positive (`> 0`).
+  - `expiryTime` must be strictly after `preparationTime`.
+  - If `publishImmediately == true`, `expiryTime` must be strictly after `Instant.now()`, creating listing in `AVAILABLE` state.
+  - If `publishImmediately == false`, initial status is `DRAFT` (private, invisible to public feed).
+
+#### Request Body Schema (`CreateDonationRequestDTO`):
+```json
+{
+  "title": "Saravana Bhavan South Indian Lunch Thali",
+  "category": "COOKED_MEALS",
+  "totalQuantity": 75.00,
+  "quantityUnit": "MEAL_BOXES",
+  "dietaryType": "PURE_VEG",
+  "storageCondition": "HOT_INSULATED",
+  "preparationTime": "2026-11-09T05:30:00Z",
+  "expiryTime": "2026-11-09T12:00:00Z",
+  "pickupNotes": "Packed in 3-tier insulated containers at Indiranagar kitchen.",
+  "publishImmediately": true
+}
+```
+
+#### Success Response (`HTTP 201 Created`):
+```json
+{
+  "success": true,
+  "message": "Food donation published successfully and is now active for NGO requests.",
+  "data": {
+    "id": 18,
+    "donorId": 1,
+    "donorName": "Saravana Bhavan Foods Pvt Ltd",
+    "donorCity": "Bengaluru",
+    "title": "Saravana Bhavan South Indian Lunch Thali",
+    "category": "COOKED_MEALS",
+    "totalQuantity": 75.00,
+    "availableQuantity": 75.00,
+    "quantityUnit": "MEAL_BOXES",
+    "dietaryType": "PURE_VEG",
+    "storageCondition": "HOT_INSULATED",
+    "status": "AVAILABLE",
+    "statusDescription": "Available for NGOs (75.00 Meal Boxes / Thalis remaining)",
+    "progressPercentage": 25,
+    "terminal": false
+  }
+}
+```
+
+---
+
+### 4.2 Update Food Donation Listing
+- **Method:** `PUT`
+- **URL:** `/donations/{id}`
+- **Access:** `DONOR` (Owner only), `ADMIN`
+- **Rules:**
+  - Allowed only when status is `DRAFT` or `AVAILABLE`.
+  - Total quantity cannot be reduced below already allocated stock.
+  - Ownership is strictly enforced; non-owner gets `HTTP 403 Forbidden`.
+
+---
+
+### 4.3 Publish Draft Listing
+- **Method:** `POST`
+- **URL:** `/donations/{id}/publish`
+- **Access:** `DONOR` (Owner only), `ADMIN`
+- **Rules:** Transitions listing from `DRAFT` to `AVAILABLE`. Requires future expiry timestamp.
+
+---
+
+### 4.4 Cancel Food Donation Listing
+- **Method:** `POST`
+- **URL:** `/donations/{id}/cancel`
+- **Access:** `DONOR` (Owner only), `ADMIN`
+- **Rules:** Transitions listing to `CANCELLED`. Cannot cancel `COMPLETED` or `EXPIRED` listings.
+
+---
+
+### 4.5 Donor's Own Listings
+- **Method:** `GET`
+- **URL:** `/donations/mine?page=0&size=10`
+- **Access:** `DONOR`, `ADMIN`
+- **Response:** Paginated list of all listings created by the authenticated donor (including drafts).
+
+---
+
+### 4.6 Public Surplus Food Discovery
+- **Method:** `GET`
+- **URL:** `/donations/public?category=COOKED_MEALS&dietaryType=PURE_VEG&city=Bengaluru&query=Pulao&page=0&size=12`
+- **Access:** Public (Unauthenticated)
+- **Rules:** Filters strictly for `status = 'AVAILABLE'` and `expiryTime > Instant.now()`. Drafts and expired listings are excluded.
+

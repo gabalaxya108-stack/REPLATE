@@ -1,6 +1,7 @@
 import { ApiResponse, AuthResponse, LoginRequest, RegisterRequest, UserSummary } from '../types/auth';
+import { CreateDonationRequest, DonationResponse, PageResponse, UpdateDonationRequest } from '../types/donation';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+const BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api/v1';
 
 export class ApiError extends Error {
   status: number;
@@ -87,6 +88,74 @@ class ApiClient {
 
   async getCurrentUser(): Promise<UserSummary> {
     return this.request<UserSummary>('/auth/me', {
+      method: 'GET',
+    });
+  }
+
+  // Food Donation Endpoints
+  async createDonation(payload: CreateDonationRequest): Promise<DonationResponse> {
+    return this.request<DonationResponse>('/donations', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async updateDonation(id: number, payload: UpdateDonationRequest): Promise<DonationResponse> {
+    return this.request<DonationResponse>(`/donations/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async publishDonation(id: number): Promise<DonationResponse> {
+    return this.request<DonationResponse>(`/donations/${id}/publish`, {
+      method: 'POST',
+    });
+  }
+
+  async cancelDonation(id: number): Promise<DonationResponse> {
+    return this.request<DonationResponse>(`/donations/${id}/cancel`, {
+      method: 'POST',
+    });
+  }
+
+  async getMyDonations(page = 0, size = 10): Promise<PageResponse<DonationResponse>> {
+    return this.request<PageResponse<DonationResponse>>(`/donations/mine?page=${page}&size=${size}`, {
+      method: 'GET',
+    });
+  }
+
+  async searchPublicDonations(params: {
+    category?: string;
+    dietaryType?: string;
+    city?: string;
+    query?: string;
+    page?: number;
+    size?: number;
+  } = {}): Promise<PageResponse<DonationResponse>> {
+    const searchParams = new URLSearchParams();
+    if (params.category && params.category !== 'ALL') searchParams.set('category', params.category);
+    if (params.dietaryType && params.dietaryType !== 'ALL') searchParams.set('dietaryType', params.dietaryType);
+    if (params.city && params.city !== 'ALL') searchParams.set('city', params.city);
+    if (params.query && params.query.trim()) searchParams.set('query', params.query.trim());
+    if (params.page !== undefined) searchParams.set('page', params.page.toString());
+    if (params.size !== undefined) searchParams.set('size', params.size.toString());
+
+    const qs = searchParams.toString();
+    const endpoint = `/donations/public${qs ? `?${qs}` : ''}`;
+    return this.request<PageResponse<DonationResponse>>(endpoint, {
+      method: 'GET',
+    });
+  }
+
+  async getDonationById(id: number): Promise<DonationResponse> {
+    return this.request<DonationResponse>(`/donations/${id}`, {
+      method: 'GET',
+    });
+  }
+
+  async getPublicDonationById(id: number): Promise<DonationResponse> {
+    return this.request<DonationResponse>(`/donations/public/${id}`, {
       method: 'GET',
     });
   }

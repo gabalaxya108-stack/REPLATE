@@ -1,6 +1,7 @@
 package com.replate.domain.enums;
 
 public enum DonationStatus {
+    DRAFT,
     AVAILABLE,
     PARTIALLY_ALLOCATED,
     FULLY_ALLOCATED,
@@ -8,4 +9,3 @@ public enum DonationStatus {
     EXPIRED,
     CANCELLED
 }
-

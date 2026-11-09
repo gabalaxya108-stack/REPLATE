@@ -14,6 +14,7 @@ export type DietaryType = 'PURE_VEG' | 'NON_VEG' | 'VEGAN';
 export type StorageCondition = 'HOT_INSULATED' | 'REFRIGERATED' | 'AMBIENT';
 
 export type DonationStatus =
+  | 'DRAFT'
   | 'AVAILABLE'
   | 'PARTIALLY_ALLOCATED'
   | 'FULLY_ALLOCATED'

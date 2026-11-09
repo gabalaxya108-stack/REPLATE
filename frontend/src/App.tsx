@@ -7,6 +7,7 @@ import { Home } from './pages/Home';
 import { ExploreDonations } from './pages/ExploreDonations';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { DonorDashboard } from './pages/DonorDashboard';
 import { NotFound } from './pages/NotFound';
 
 export const App: React.FC = () => {
@@ -19,6 +20,7 @@ export const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/explore" element={<ExploreDonations />} />
+              <Route path="/donor/donations" element={<DonorDashboard />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="*" element={<NotFound />} />

@@ -13,7 +13,8 @@
 | `ReplateApplicationTests` | Smoke / Context Test | 1 | Validates full Spring Boot application context initialization, HikariCP pool connection to PostgreSQL `replate_db`, and schema validation against JPA entities. |
 | `AuthenticationFlowIntegrationTest` | Integration Test | 12 | Tests complete REST security layer: Donor registration, NGO registration, Volunteer registration, duplicate email rejection, admin self-registration blockage, login with valid/invalid credentials, stateless JWT issuance, unauthenticated `/me` rejection, and role-based endpoint isolation. |
 | `DonorRegistrationPersistenceE2ETest` | End-to-End Test | 1 | Verifies the complete lifecycle: HTTP registration call $\to$ PostgreSQL `app_user` row creation $\to$ BCrypt hash check $\to$ `donor_profile` foreign key persistence $\to$ authenticated `/api/v1/auth/me` profile retrieval $\to$ subsequent login $\to$ duplicate constraint enforcement. |
-| **Total Automated Tests** | **All Layers** | **15** | **100% Passing (0 failures, 0 errors, 0 skipped)** |
+| `FoodDonationLifecycleIntegrationTest` | Integration Test | 9 | Tests complete donation lifecycle: draft creation, immediate publishing, invalid quantity rejection, expiry-before-preparation rejection, draft-to-available transition, donor ownership enforcement, cancellation rules, public discovery draft privacy, and paginated donor listings. |
+| **Total Automated Tests** | **All Layers** | **24** | **100% Passing (0 failures, 0 errors, 0 skipped)** |
 
 ---
 

@@ -88,6 +88,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/donations/public/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/impact/**").permitAll()
 
+                        // Donation operations
+                        .requestMatchers("/api/v1/donations/mine/**").hasAnyRole("DONOR", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/donations/**").hasAnyRole("DONOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/donations/**").hasAnyRole("DONOR", "ADMIN")
+
                         // Role-specific endpoints
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/donors/**").hasAnyRole("DONOR", "ADMIN")
