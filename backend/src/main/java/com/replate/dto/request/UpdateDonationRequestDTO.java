@@ -132,3 +132,4 @@ public class UpdateDonationRequestDTO {
         this.pickupNotes = pickupNotes;
     }
 }
+

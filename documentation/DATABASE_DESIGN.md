@@ -117,7 +117,7 @@ Formal requests submitted by NGOs for specific quantities.
 | `ngo_id` | `BIGINT` | NOT NULL, FK(`ngo_profile.user_id`) | Requesting NGO |
 | `requested_quantity` | `NUMERIC(10,2)` | NOT NULL, CHECK(`requested_quantity > 0`) | Quantity requested |
 | `intended_beneficiaries`| `TEXT` | NOT NULL | Demographic profile (*e.g., 50 children at shelter*) |
-| `status` | `VARCHAR(30)` | NOT NULL DEFAULT 'PENDING' | `PENDING`, `APPROVED`, `REJECTED`, `CANCELLED` |
+| `status` | `VARCHAR(30)` | NOT NULL DEFAULT 'PENDING' | `PENDING`, `APPROVED`, `REJECTED`, `WITHDRAWN`, `CANCELLED`, `EXPIRED` |
 | `rejection_reason` | `VARCHAR(255)` | NULLABLE | Donor justification if declined |
 | `created_at` | `TIMESTAMP WITH TIME ZONE` | DEFAULT NOW() | Timestamp |
 

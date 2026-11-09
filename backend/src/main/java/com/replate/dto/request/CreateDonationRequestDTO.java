@@ -143,3 +143,4 @@ public class CreateDonationRequestDTO {
         this.publishImmediately = publishImmediately;
     }
 }
+

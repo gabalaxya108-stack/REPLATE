@@ -1,13 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { DonationResponse } from '../types/donation';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
-import { Search, MapPin, Clock, Info, Utensils, RefreshCw, AlertCircle, ShieldCheck } from 'lucide-react';
+import { 
+  Search, MapPin, Clock, Info, Utensils, RefreshCw, 
+  AlertCircle, ShieldCheck, CheckCircle2, Building2, ArrowRight
+} from 'lucide-react';
 
 export const ExploreDonations: React.FC = () => {
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
   const [donations, setDonations] = useState<DonationResponse[]>([]);
   const [totalElements, setTotalElements] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,6 +29,14 @@ export const ExploreDonations: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0);
 
   const [selectedDonation, setSelectedDonation] = useState<DonationResponse | null>(null);
+
+  // Request Modal State
+  const [requestModalDonation, setRequestModalDonation] = useState<DonationResponse | null>(null);
+  const [requestedQty, setRequestedQty] = useState<string>('');
+  const [intendedBeneficiaries, setIntendedBeneficiaries] = useState<string>('');
+  const [isSubmittingRequest, setIsSubmittingRequest] = useState<boolean>(false);
+  const [requestModalError, setRequestModalError] = useState<string | null>(null);
+  const [requestSuccessNotice, setRequestSuccessNotice] = useState<string | null>(null);
 
   const categories = [
     { key: 'ALL', label: 'All Categories' },
@@ -73,6 +89,57 @@ export const ExploreDonations: React.FC = () => {
     const mins = Math.floor((diffMs % 3600000) / 60000);
     if (hours > 0) return `${hours}h ${mins}m remaining`;
     return `${mins}m remaining`;
+  };
+
+  const handleOpenRequestModal = (donation: DonationResponse) => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    if (user?.role !== 'NGO' && user?.role !== 'ADMIN') {
+      alert('Only registered NGOs can submit food redistribution claims. Donors and volunteers can explore listings or view their respective portals.');
+      return;
+    }
+    setRequestModalDonation(donation);
+    setRequestedQty(donation.availableQuantity.toString());
+    setIntendedBeneficiaries('');
+    setRequestModalError(null);
+  };
+
+  const handleSubmitRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!requestModalDonation) return;
+
+    const qty = parseFloat(requestedQty);
+    if (isNaN(qty) || qty <= 0) {
+      setRequestModalError('Please enter a valid requested quantity greater than zero.');
+      return;
+    }
+    if (qty > requestModalDonation.availableQuantity) {
+      setRequestModalError(`Requested quantity cannot exceed available quantity (${requestModalDonation.availableQuantity} ${requestModalDonation.quantityUnit}).`);
+      return;
+    }
+    if (!intendedBeneficiaries.trim() || intendedBeneficiaries.trim().length < 5) {
+      setRequestModalError('Please specify the intended beneficiaries (minimum 5 characters).');
+      return;
+    }
+
+    setIsSubmittingRequest(true);
+    setRequestModalError(null);
+    try {
+      await api.createFoodRequest({
+        donationId: requestModalDonation.id,
+        requestedQuantity: qty,
+        intendedBeneficiaries: intendedBeneficiaries.trim(),
+      });
+      setRequestModalDonation(null);
+      setRequestSuccessNotice(`Claim for "${requestModalDonation.title}" submitted successfully! Awaiting donor review.`);
+      setTimeout(() => setRequestSuccessNotice(null), 6000);
+    } catch (err: any) {
+      setRequestModalError(err instanceof ApiError ? err.message : 'Failed to submit food redistribution claim.');
+    } finally {
+      setIsSubmittingRequest(false);
+    }
   };
 
   return (
@@ -176,6 +243,26 @@ export const ExploreDonations: React.FC = () => {
         </div>
       </div>
 
+      {/* Success Banner */}
+      {requestSuccessNotice && (
+        <div className="mb-8 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center justify-between shadow-sm animate-in fade-in duration-200">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            <div>
+              <span className="font-bold block">Redistribution Claim Submitted</span>
+              <span>{requestSuccessNotice}</span>
+            </div>
+          </div>
+          <Link
+            to="/ngo/requests"
+            className="font-bold text-forest hover:text-forest-dark inline-flex items-center gap-1 shrink-0 ml-4 underline"
+          >
+            Track in NGO Console
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      )}
+
       {/* Error state */}
       {error && (
         <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2.5">
@@ -275,7 +362,7 @@ export const ExploreDonations: React.FC = () => {
                   <Button
                     size="sm"
                     variant="primary"
-                    onClick={() => setSelectedDonation(donation)}
+                    onClick={() => handleOpenRequestModal(donation)}
                   >
                     Request Batch
                   </Button>
@@ -356,13 +443,130 @@ export const ExploreDonations: React.FC = () => {
                 variant="primary"
                 size="sm"
                 onClick={() => {
-                  alert(`Request allocation workflow for "${selectedDonation.title}" proceeds in Phase 2 Step 6 with NGO request matching!`);
+                  const target = selectedDonation;
                   setSelectedDonation(null);
+                  handleOpenRequestModal(target);
                 }}
               >
                 Proceed to Request
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* NGO Request Batch Modal */}
+      {requestModalDonation && (
+        <div className="fixed inset-0 z-50 bg-ink-primary/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-surface rounded-2xl border border-border max-w-lg w-full p-6 space-y-5 shadow-2xl">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-300">
+                  Redistribution Claim Application
+                </span>
+                <h3 className="text-xl font-bold text-ink-primary mt-1.5">
+                  Request: {requestModalDonation.title}
+                </h3>
+                <p className="text-xs text-ink-secondary flex items-center gap-1.5 mt-0.5">
+                  <Building2 className="w-3.5 h-3.5 text-forest" />
+                  Offered by {requestModalDonation.donorName} ({requestModalDonation.donorCity})
+                </p>
+              </div>
+              <button
+                onClick={() => setRequestModalDonation(null)}
+                disabled={isSubmittingRequest}
+                className="text-ink-secondary hover:text-ink-primary p-1 rounded-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            {requestModalError && (
+              <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
+                <span>{requestModalError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmitRequest} className="space-y-4">
+              <div className="bg-warm-muted/70 p-3.5 rounded-xl space-y-1.5 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-ink-secondary">Available in Batch:</span>
+                  <span className="font-bold text-forest">
+                    {requestModalDonation.availableQuantity} {requestModalDonation.quantityUnit}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-secondary">Category & Diet:</span>
+                  <span className="font-semibold text-ink-primary">
+                    {requestModalDonation.category.replace('_', ' ')} • {requestModalDonation.dietaryType.replace('_', ' ')}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-secondary">Safe Redistribution Window:</span>
+                  <span className="font-semibold text-terracotta">
+                    {calculateHoursLeft(requestModalDonation.expiryTime)}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-ink-primary mb-1">
+                  Requested Quantity ({requestModalDonation.quantityUnit}) *
+                </label>
+                <Input
+                  type="number"
+                  min="0.1"
+                  max={requestModalDonation.availableQuantity}
+                  step="any"
+                  value={requestedQty}
+                  onChange={(e) => setRequestedQty(e.target.value)}
+                  placeholder={`Max ${requestModalDonation.availableQuantity}`}
+                  required
+                />
+                <span className="text-[11px] text-ink-muted mt-1 block">
+                  You can claim full or partial quantity up to {requestModalDonation.availableQuantity} {requestModalDonation.quantityUnit}.
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-ink-primary mb-1">
+                  Intended Beneficiary Purpose & Distribution Details *
+                </label>
+                <textarea
+                  rows={3}
+                  value={intendedBeneficiaries}
+                  onChange={(e) => setIntendedBeneficiaries(e.target.value)}
+                  placeholder="e.g., Distribution to 45 resident children and senior citizens at Hope Community Shelter, Indiranagar."
+                  className="w-full rounded-lg border border-border bg-surface p-3 text-xs text-ink-primary placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-forest/20 focus:border-forest"
+                  required
+                />
+                <span className="text-[11px] text-ink-muted mt-0.5 block">
+                  The commercial kitchen donor will review this justification before confirming dispatch.
+                </span>
+              </div>
+
+              <div className="pt-3 border-t border-border flex items-center justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRequestModalDonation(null)}
+                  disabled={isSubmittingRequest}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  disabled={isSubmittingRequest}
+                  leftIcon={isSubmittingRequest ? <RefreshCw className="w-4 h-4 animate-spin" /> : undefined}
+                >
+                  {isSubmittingRequest ? 'Submitting Claim...' : 'Submit Claim to Donor'}
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

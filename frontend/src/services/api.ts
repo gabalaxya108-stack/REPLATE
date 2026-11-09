@@ -1,5 +1,6 @@
 import { ApiResponse, AuthResponse, LoginRequest, RegisterRequest, UserSummary } from '../types/auth';
 import { CreateDonationRequest, DonationResponse, PageResponse, UpdateDonationRequest } from '../types/donation';
+import { CreateFoodRequest, FoodRequestResponse, RejectFoodRequest } from '../types/request';
 
 const BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api/v1';
 
@@ -157,6 +158,52 @@ class ApiClient {
   async getPublicDonationById(id: number): Promise<DonationResponse> {
     return this.request<DonationResponse>(`/donations/public/${id}`, {
       method: 'GET',
+    });
+  }
+
+  // Food Request Endpoints
+  async createFoodRequest(payload: CreateFoodRequest): Promise<FoodRequestResponse> {
+    return this.request<FoodRequestResponse>('/requests', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getMyFoodRequests(page = 0, size = 10): Promise<PageResponse<FoodRequestResponse>> {
+    return this.request<PageResponse<FoodRequestResponse>>(`/requests/mine?page=${page}&size=${size}`, {
+      method: 'GET',
+    });
+  }
+
+  async getReceivedFoodRequests(page = 0, size = 10): Promise<PageResponse<FoodRequestResponse>> {
+    return this.request<PageResponse<FoodRequestResponse>>(`/requests/received?page=${page}&size=${size}`, {
+      method: 'GET',
+    });
+  }
+
+  async getFoodRequestById(id: number): Promise<FoodRequestResponse> {
+    return this.request<FoodRequestResponse>(`/requests/${id}`, {
+      method: 'GET',
+    });
+  }
+
+  async approveFoodRequest(id: number, remarks?: string): Promise<FoodRequestResponse> {
+    const qs = remarks ? `?remarks=${encodeURIComponent(remarks)}` : '';
+    return this.request<FoodRequestResponse>(`/requests/${id}/approve${qs}`, {
+      method: 'POST',
+    });
+  }
+
+  async rejectFoodRequest(id: number, payload: RejectFoodRequest): Promise<FoodRequestResponse> {
+    return this.request<FoodRequestResponse>(`/requests/${id}/reject`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async withdrawFoodRequest(id: number): Promise<FoodRequestResponse> {
+    return this.request<FoodRequestResponse>(`/requests/${id}/withdraw`, {
+      method: 'POST',
     });
   }
 }

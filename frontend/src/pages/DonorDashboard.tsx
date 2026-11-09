@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { api, ApiError } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { DonationResponse, CreateDonationRequest, UpdateDonationRequest } from '../types/donation';
+import { FoodRequestResponse } from '../types/request';
 import { FoodCategory, QuantityUnit, DietaryType, StorageCondition, DonationStatus } from '../types';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -9,15 +10,30 @@ import { Badge } from '../components/common/Badge';
 import { Input } from '../components/common/Input';
 import { 
   Plus, Edit3, Send, XCircle, Clock, Utensils, AlertCircle, 
-  CheckCircle2, RefreshCw, Eye, MapPin, ChefHat, ShieldCheck
+  CheckCircle2, RefreshCw, Eye, MapPin, ChefHat, ShieldCheck,
+  Building2, Check, MessageSquare
 } from 'lucide-react';
 
 export const DonorDashboard: React.FC = () => {
   const { user } = useAuth();
+  const [activeMainTab, setActiveMainTab] = useState<'DONATIONS' | 'CLAIMS'>('DONATIONS');
+
   const [donations, setDonations] = useState<DonationResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Incoming Requests State
+  const [receivedRequests, setReceivedRequests] = useState<FoodRequestResponse[]>([]);
+  const [isLoadingRequests, setIsLoadingRequests] = useState(false);
+  const [claimsStatusFilter, setClaimsStatusFilter] = useState<string>('ALL');
+  const [approvingRequestId, setApprovingRequestId] = useState<number | null>(null);
+
+  // Reject Modal State
+  const [rejectingRequest, setRejectingRequest] = useState<FoodRequestResponse | null>(null);
+  const [rejectionReason, setRejectionReason] = useState<string>('');
+  const [isSubmittingReject, setIsSubmittingReject] = useState<boolean>(false);
+  const [rejectError, setRejectError] = useState<string | null>(null);
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -69,9 +85,69 @@ export const DonorDashboard: React.FC = () => {
     }
   }, []);
 
+  const fetchReceivedRequests = useCallback(async () => {
+    setIsLoadingRequests(true);
+    try {
+      const res = await api.getReceivedFoodRequests(0, 50);
+      setReceivedRequests(res.content);
+    } catch (err: any) {
+      console.error('Failed to load incoming NGO claims:', err);
+    } finally {
+      setIsLoadingRequests(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchMyDonations();
-  }, [fetchMyDonations]);
+    fetchReceivedRequests();
+  }, [fetchMyDonations, fetchReceivedRequests]);
+
+  const handleApproveRequest = async (id: number) => {
+    setApprovingRequestId(id);
+    setError(null);
+    try {
+      await api.approveFoodRequest(id);
+      setSuccessMessage('Food request approved! Allocation and volunteer dispatch will proceed in Step 7.');
+      fetchReceivedRequests();
+      fetchMyDonations();
+      setTimeout(() => setSuccessMessage(null), 5000);
+    } catch (err: any) {
+      setError(err instanceof ApiError ? err.message : 'Failed to approve food request.');
+    } finally {
+      setApprovingRequestId(null);
+    }
+  };
+
+  const handleOpenRejectModal = (req: FoodRequestResponse) => {
+    setRejectingRequest(req);
+    setRejectionReason('');
+    setRejectError(null);
+  };
+
+  const handleConfirmReject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rejectingRequest) return;
+    if (!rejectionReason.trim() || rejectionReason.trim().length < 5) {
+      setRejectError('Please state a valid justification for declining this claim (minimum 5 characters).');
+      return;
+    }
+
+    setIsSubmittingReject(true);
+    setRejectError(null);
+    try {
+      await api.rejectFoodRequest(rejectingRequest.id, {
+        rejectionReason: rejectionReason.trim(),
+      });
+      setRejectingRequest(null);
+      setSuccessMessage('Food request declined with notice delivered to the requesting NGO.');
+      fetchReceivedRequests();
+      setTimeout(() => setSuccessMessage(null), 5000);
+    } catch (err: any) {
+      setRejectError(err instanceof ApiError ? err.message : 'Failed to decline request.');
+    } finally {
+      setIsSubmittingReject(false);
+    }
+  };
 
   const openCreateModal = () => {
     setEditingDonation(null);
@@ -218,6 +294,32 @@ export const DonorDashboard: React.FC = () => {
     return true;
   });
 
+  const pendingClaimsCount = receivedRequests.filter((r) => r.status === 'PENDING').length;
+  const approvedClaimsCount = receivedRequests.filter((r) => r.status === 'APPROVED').length;
+  const rejectedClaimsCount = receivedRequests.filter((r) => r.status === 'REJECTED').length;
+
+  const filteredClaims = receivedRequests.filter((r) => {
+    if (claimsStatusFilter === 'ALL') return true;
+    return r.status === claimsStatusFilter;
+  });
+
+  const getRequestStatusBadge = (status: string) => {
+    switch (status) {
+      case 'PENDING':
+        return <Badge variant="warning">Under Review</Badge>;
+      case 'APPROVED':
+        return <Badge variant="available">Approved</Badge>;
+      case 'REJECTED':
+        return <Badge variant="non-veg">Declined</Badge>;
+      case 'WITHDRAWN':
+        return <Badge variant="neutral">Withdrawn</Badge>;
+      case 'EXPIRED':
+        return <Badge variant="neutral">Expired</Badge>;
+      default:
+        return <Badge variant="neutral">{status}</Badge>;
+    }
+  };
+
   const getStatusBadge = (status: DonationStatus) => {
     switch (status) {
       case 'DRAFT':
@@ -312,7 +414,52 @@ export const DonorDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* KPI Counters */}
+      {/* Primary Dashboard Navigation Tabs */}
+      <div className="flex items-center gap-3 mb-8 border-b border-border pb-4">
+        <button
+          onClick={() => setActiveMainTab('DONATIONS')}
+          className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-extrabold transition-all ${
+            activeMainTab === 'DONATIONS'
+              ? 'bg-forest text-white shadow-xs'
+              : 'text-ink-secondary hover:text-ink-primary hover:bg-warm-muted'
+          }`}
+        >
+          <Utensils className="w-4 h-4" />
+          <span>Food Batches & Stock</span>
+          <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+            activeMainTab === 'DONATIONS' ? 'bg-white/20 text-white' : 'bg-warm-muted text-ink-primary'
+          }`}>
+            {donations.length}
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveMainTab('CLAIMS')}
+          className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-extrabold transition-all ${
+            activeMainTab === 'CLAIMS'
+              ? 'bg-forest text-white shadow-xs'
+              : 'text-ink-secondary hover:text-ink-primary hover:bg-warm-muted'
+          }`}
+        >
+          <Building2 className="w-4 h-4" />
+          <span>Incoming NGO Claims</span>
+          {pendingClaimsCount > 0 ? (
+            <span className="text-[10px] px-2 py-0.5 rounded-full font-black bg-amber-500 text-white animate-pulse">
+              {pendingClaimsCount} Pending
+            </span>
+          ) : (
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+              activeMainTab === 'CLAIMS' ? 'bg-white/20 text-white' : 'bg-warm-muted text-ink-primary'
+            }`}>
+              {receivedRequests.length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {activeMainTab === 'DONATIONS' && (
+        <>
+          {/* KPI Counters */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <Card padding="md" className="bg-surface shadow-xs border-border">
           <span className="text-xs text-ink-secondary font-medium">Total Batches Listed</span>
@@ -494,6 +641,213 @@ export const DonorDashboard: React.FC = () => {
             </Card>
           ))}
         </div>
+      )}
+        </>
+      )}
+
+      {/* Main Content Area: Incoming NGO Claims Tab */}
+      {activeMainTab === 'CLAIMS' && (
+        <>
+          {/* Claims KPI Counters */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <Card padding="md" className="bg-surface shadow-xs border-border">
+              <span className="text-xs text-ink-secondary font-medium">Claims Received</span>
+              <div className="text-2xl font-extrabold text-ink-primary mt-1">{receivedRequests.length}</div>
+              <span className="text-[11px] text-ink-muted">From registered NGO partners</span>
+            </Card>
+            <Card padding="md" className="bg-surface shadow-xs border-border">
+              <span className="text-xs text-amber-700 font-medium">Under Review</span>
+              <div className="text-2xl font-extrabold text-amber-700 mt-1">{pendingClaimsCount}</div>
+              <span className="text-[11px] text-amber-600/80">Pending your approval</span>
+            </Card>
+            <Card padding="md" className="bg-surface shadow-xs border-border">
+              <span className="text-xs text-emerald-700 font-medium">Approved Claims</span>
+              <div className="text-2xl font-extrabold text-forest mt-1">{approvedClaimsCount}</div>
+              <span className="text-[11px] text-emerald-600/80">Stock confirmed for pickup</span>
+            </Card>
+            <Card padding="md" className="bg-surface shadow-xs border-border">
+              <span className="text-xs text-ink-secondary font-medium">Declined / Withdrawn</span>
+              <div className="text-2xl font-extrabold text-ink-secondary mt-1">{rejectedClaimsCount}</div>
+              <span className="text-[11px] text-ink-muted">Unfulfilled requests</span>
+            </Card>
+          </div>
+
+          {/* Claims Filter Tabs */}
+          <div className="flex items-center gap-2 mb-6 border-b border-border pb-3 overflow-x-auto">
+            {[
+              { key: 'ALL', label: 'All Incoming Claims' },
+              { key: 'PENDING', label: 'Under Review' },
+              { key: 'APPROVED', label: 'Approved' },
+              { key: 'REJECTED', label: 'Declined' },
+              { key: 'WITHDRAWN', label: 'Withdrawn' },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setClaimsStatusFilter(tab.key)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  claimsStatusFilter === tab.key
+                    ? 'bg-forest text-white shadow-xs'
+                    : 'text-ink-secondary hover:text-ink-primary hover:bg-warm-muted'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Claims List */}
+          {isLoadingRequests ? (
+            <div className="py-20 text-center">
+              <RefreshCw className="w-8 h-8 text-forest animate-spin mx-auto mb-3" />
+              <p className="text-sm font-medium text-ink-secondary">Loading incoming NGO claims from PostgreSQL...</p>
+            </div>
+          ) : filteredClaims.length === 0 ? (
+            <Card padding="lg" className="text-center py-16 bg-surface shadow-card border-dashed">
+              <Building2 className="w-12 h-12 text-sage mx-auto mb-3 opacity-60" />
+              <h3 className="text-lg font-bold text-ink-primary">No Incoming NGO Claims Found</h3>
+              <p className="text-xs text-ink-secondary max-w-md mx-auto mt-1 mb-4">
+                {claimsStatusFilter === 'ALL'
+                  ? 'No welfare NGOs have submitted claims for your surplus batches yet. Active batches appear in the public feed for NGOs to request.'
+                  : `No incoming claims currently matching status "${claimsStatusFilter}".`}
+              </p>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {filteredClaims.map((claim) => (
+                <Card
+                  key={claim.id}
+                  padding="lg"
+                  className="bg-surface border border-border shadow-card flex flex-col md:flex-row md:items-start justify-between gap-5"
+                >
+                  <div className="space-y-3 flex-1">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-base font-extrabold text-ink-primary">
+                        {claim.donationTitle}
+                      </span>
+                      {getRequestStatusBadge(claim.status)}
+                      <span className="text-xs text-ink-secondary flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-ink-muted" />
+                        Received {new Date(claim.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+
+                    {/* NGO Identity & Verification Box */}
+                    <div className="p-3.5 bg-warm-muted/70 rounded-xl space-y-2 text-xs border border-border/60">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4 text-forest" />
+                          <span className="font-extrabold text-ink-primary text-sm">
+                            {claim.ngoName}
+                          </span>
+                        </div>
+                        {claim.ngoDarpanId && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-200">
+                            Darpan ID: {claim.ngoDarpanId}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-4 text-ink-secondary text-[11px] pt-1">
+                        {claim.ngoPhone && (
+                          <span>
+                            <strong>Contact:</strong> {claim.ngoPhone}
+                          </span>
+                        )}
+                        <span>•</span>
+                        <span>
+                          <strong>Requested:</strong>{' '}
+                          <span className="font-extrabold text-forest text-xs">
+                            {claim.requestedQuantity} {claim.donationQuantityUnit}
+                          </span>
+                        </span>
+                        <span>•</span>
+                        <span>
+                          <strong>Batch Available:</strong> {claim.donationAvailableQuantity} {claim.donationQuantityUnit}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Beneficiary Justification */}
+                    <div className="p-3 bg-surface rounded-xl border border-border text-xs space-y-1">
+                      <span className="font-bold text-ink-primary flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
+                        <MessageSquare className="w-3.5 h-3.5 text-forest" />
+                        NGO Beneficiary & Distribution Plan
+                      </span>
+                      <p className="text-ink-secondary leading-relaxed pl-5">
+                        "{claim.intendedBeneficiaries}"
+                      </p>
+                    </div>
+
+                    {/* Rejection notice if declined */}
+                    {claim.status === 'REJECTED' && claim.rejectionReason && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">
+                        <span className="font-bold block">Decline Justification:</span>
+                        <p className="mt-0.5">{claim.rejectionReason}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Column */}
+                  <div className="flex md:flex-col items-center md:items-end justify-end gap-2.5 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-border">
+                    {claim.status === 'PENDING' && (
+                      <>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleApproveRequest(claim.id)}
+                          disabled={approvingRequestId === claim.id}
+                          leftIcon={
+                            approvingRequestId === claim.id ? (
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Check className="w-3.5 h-3.5" />
+                            )
+                          }
+                        >
+                          {approvingRequestId === claim.id ? 'Approving...' : 'Approve Claim'}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenRejectModal(claim)}
+                          disabled={approvingRequestId === claim.id}
+                          className="text-red-700 border-red-200 hover:bg-red-50 hover:border-red-300"
+                          leftIcon={<XCircle className="w-3.5 h-3.5 text-red-500" />}
+                        >
+                          Decline
+                        </Button>
+                      </>
+                    )}
+
+                    {claim.status === 'APPROVED' && (
+                      <div className="text-right">
+                        <span className="text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                          Approved Claim
+                        </span>
+                        <span className="text-[10px] text-ink-muted mt-1 block">
+                          Stock reserved; allocation in Step 7
+                        </span>
+                      </div>
+                    )}
+
+                    {claim.status === 'REJECTED' && (
+                      <span className="text-xs font-medium text-red-700 bg-red-50 border border-red-200 px-3 py-1 rounded-lg">
+                        Claim Declined
+                      </span>
+                    )}
+
+                    {claim.status === 'WITHDRAWN' && (
+                      <span className="text-xs font-medium text-ink-muted bg-warm-muted border border-border px-3 py-1 rounded-lg">
+                        Withdrawn by NGO
+                      </span>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* Create / Edit Donation Modal */}
@@ -743,6 +1097,82 @@ export const DonorDashboard: React.FC = () => {
                 Close
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Decline Claim Modal */}
+      {rejectingRequest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-surface border border-border rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-red-100 text-red-800 border border-red-300">
+                  Decline Redistribution Claim
+                </span>
+                <h3 className="text-lg font-bold text-ink-primary mt-1">
+                  Decline Request from {rejectingRequest.ngoName}
+                </h3>
+                <p className="text-xs text-ink-secondary mt-0.5">
+                  Batch: {rejectingRequest.donationTitle} ({rejectingRequest.requestedQuantity} {rejectingRequest.donationQuantityUnit})
+                </p>
+              </div>
+              <button
+                onClick={() => setRejectingRequest(null)}
+                disabled={isSubmittingReject}
+                className="text-ink-secondary hover:text-ink-primary p-1 rounded-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            {rejectError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
+                <span>{rejectError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleConfirmReject} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-ink-primary mb-1">
+                  Reason for Declining *
+                </label>
+                <textarea
+                  rows={3}
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="e.g., Cold storage requirements cannot be met for this distance, or batch already promised to nearby shelter."
+                  className="w-full rounded-lg border border-border bg-surface p-3 text-xs text-ink-primary placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-forest/20 focus:border-forest"
+                  required
+                />
+                <span className="text-[11px] text-ink-muted mt-1 block">
+                  This explanation will be shared transparently with the requesting NGO.
+                </span>
+              </div>
+
+              <div className="pt-2 border-t border-border flex items-center justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRejectingRequest(null)}
+                  disabled={isSubmittingReject}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  disabled={isSubmittingReject}
+                  className="bg-red-700 hover:bg-red-800 text-white"
+                  leftIcon={isSubmittingReject ? <RefreshCw className="w-4 h-4 animate-spin" /> : undefined}
+                >
+                  {isSubmittingReject ? 'Declining...' : 'Confirm Decline'}
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

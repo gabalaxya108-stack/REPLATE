@@ -256,3 +256,4 @@ public class DonationResponseDTO {
         this.updatedAt = updatedAt;
     }
 }
+

@@ -4,6 +4,7 @@ public enum RequestStatus {
     PENDING,
     APPROVED,
     REJECTED,
-    CANCELLED
+    WITHDRAWN,
+    CANCELLED,
+    EXPIRED
 }
-

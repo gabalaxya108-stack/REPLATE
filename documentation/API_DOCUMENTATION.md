@@ -287,3 +287,204 @@ In the event of an error (HTTP 400, 401, 403, 404, 409, 500), `success` is `fals
 - **Access:** Public (Unauthenticated)
 - **Rules:** Filters strictly for `status = 'AVAILABLE'` and `expiryTime > Instant.now()`. Drafts and expired listings are excluded.
 
+---
+
+## 5. NGO Food Request & Claim Endpoints
+
+### 5.1 Submit Food Redistribution Claim
+- **Method:** `POST`
+- **URL:** `/requests`
+- **Access:** `NGO`, `ADMIN`
+- **Rules:**
+  - Authenticated user's NGO profile is automatically resolved; NGO ID cannot be spoofed.
+  - Target donation must be in `AVAILABLE` status.
+  - Requested quantity must be $> 0$ and $\le$ `availableQuantity`.
+  - Duplicate pending requests from the same NGO for the same batch return `HTTP 409 Conflict`.
+  - **Scope Boundary:** Does NOT deduct `availableQuantity` or alter `donation.status` (deferred to Step 7 allocation engine).
+
+#### Request Body (`CreateFoodRequestDTO`):
+```json
+{
+  "donationId": 18,
+  "requestedQuantity": 25.00,
+  "intendedBeneficiaries": "Redistribution to 25 senior citizens at Shanti Old Age Home, Indiranagar"
+}
+```
+
+#### Response (`FoodRequestResponseDTO`):
+```json
+{
+  "success": true,
+  "message": "Food request submitted successfully and is awaiting donor review.",
+  "data": {
+    "id": 12,
+    "donationId": 18,
+    "donationTitle": "Saravana Bhavan South Indian Lunch Thali",
+    "donationAvailableQuantity": 75.00,
+    "donorName": "Saravana Bhavan Foods Pvt Ltd",
+    "ngoName": "Robin Hood Army (Bengaluru)",
+    "ngoDarpanId": "KA/2018/0192834",
+    "requestedQuantity": 25.00,
+    "status": "PENDING"
+  }
+}
+```
+
+---
+
+### 5.2 NGO Submitted Claims (`/mine`)
+- **Method:** `GET`
+- **URL:** `/requests/mine?page=0&size=10`
+- **Access:** `NGO`, `ADMIN`
+- **Response:** Paginated list of all claims submitted by the logged-in NGO across all statuses (`PENDING`, `APPROVED`, `REJECTED`, `WITHDRAWN`).
+
+---
+
+### 5.3 Donor Incoming Claims (`/received`)
+- **Method:** `GET`
+- **URL:** `/requests/received?page=0&size=10`
+- **Access:** `DONOR`, `ADMIN`
+- **Response:** Paginated list of incoming claims submitted by NGOs for any donation owned by the authenticated donor.
+
+---
+
+### 5.4 Get Claim By ID
+- **Method:** `GET`
+- **URL:** `/requests/{id}`
+- **Access:** Requesters (`NGO`), owning `DONOR`, or `ADMIN`. Unauthorized access returns `HTTP 403 Forbidden`.
+
+---
+
+### 5.5 Approve Food Claim
+- **Method:** `POST`
+- **URL:** `/requests/{id}/approve?remarks=Hot+insulated+dispatch+ready`
+- **Access:** Owning `DONOR`, `ADMIN`
+- **Rules:**
+  - Request must be in `PENDING` status.
+  - Approver must own the target donation.
+  - Sets request status to `APPROVED`.
+  - **Scope Boundary:** Stock deduction and `Allocation` creation are serialized in Step 7.
+
+---
+
+### 5.6 Reject Food Claim
+- **Method:** `POST`
+- **URL:** `/requests/{id}/reject`
+- **Access:** Owning `DONOR`, `ADMIN`
+- **Request Body (`RejectFoodRequestDTO`):**
+```json
+{
+  "rejectionReason": "Cold storage logistics unavailable for this distance."
+}
+```
+- **Rules:** Request must be `PENDING`. Transitions status to `REJECTED` with persisted reason.
+
+---
+
+### 5.7 Withdraw Food Claim
+- **Method:** `POST`
+- **URL:** `/requests/{id}/withdraw`
+- **Access:** Requesting `NGO`, `ADMIN`
+- **Rules:** Request must be `PENDING`. Allows the NGO to cancel its own claim prior to donor review.
+
+
+
+---
+
+## 4. Food Donation Lifecycle & Inventory Endpoints
+
+### 4.1 Create Food Donation Listing
+- **Method:** `POST`
+- **URL:** `/donations`
+- **Access:** `DONOR`, `ADMIN` (`Authorization: Bearer <token>`)
+- **Parameters:** `publishImmediately` (boolean, default `false`)
+- **Rules:**
+  - `totalQuantity` must be strictly positive (`> 0`).
+  - `expiryTime` must be strictly after `preparationTime`.
+  - If `publishImmediately == true`, `expiryTime` must be strictly after `Instant.now()`, creating listing in `AVAILABLE` state.
+  - If `publishImmediately == false`, initial status is `DRAFT` (private, invisible to public feed).
+
+#### Request Body Schema (`CreateDonationRequestDTO`):
+```json
+{
+  "title": "Saravana Bhavan South Indian Lunch Thali",
+  "category": "COOKED_MEALS",
+  "totalQuantity": 75.00,
+  "quantityUnit": "MEAL_BOXES",
+  "dietaryType": "PURE_VEG",
+  "storageCondition": "HOT_INSULATED",
+  "preparationTime": "2026-11-09T05:30:00Z",
+  "expiryTime": "2026-11-09T12:00:00Z",
+  "pickupNotes": "Packed in 3-tier insulated containers at Indiranagar kitchen.",
+  "publishImmediately": true
+}
+```
+
+#### Success Response (`HTTP 201 Created`):
+```json
+{
+  "success": true,
+  "message": "Food donation published successfully and is now active for NGO requests.",
+  "data": {
+    "id": 18,
+    "donorId": 1,
+    "donorName": "Saravana Bhavan Foods Pvt Ltd",
+    "donorCity": "Bengaluru",
+    "title": "Saravana Bhavan South Indian Lunch Thali",
+    "category": "COOKED_MEALS",
+    "totalQuantity": 75.00,
+    "availableQuantity": 75.00,
+    "quantityUnit": "MEAL_BOXES",
+    "dietaryType": "PURE_VEG",
+    "storageCondition": "HOT_INSULATED",
+    "status": "AVAILABLE",
+    "statusDescription": "Available for NGOs (75.00 Meal Boxes / Thalis remaining)",
+    "progressPercentage": 25,
+    "terminal": false
+  }
+}
+```
+
+---
+
+### 4.2 Update Food Donation Listing
+- **Method:** `PUT`
+- **URL:** `/donations/{id}`
+- **Access:** `DONOR` (Owner only), `ADMIN`
+- **Rules:**
+  - Allowed only when status is `DRAFT` or `AVAILABLE`.
+  - Total quantity cannot be reduced below already allocated stock.
+  - Ownership is strictly enforced; non-owner gets `HTTP 403 Forbidden`.
+
+---
+
+### 4.3 Publish Draft Listing
+- **Method:** `POST`
+- **URL:** `/donations/{id}/publish`
+- **Access:** `DONOR` (Owner only), `ADMIN`
+- **Rules:** Transitions listing from `DRAFT` to `AVAILABLE`. Requires future expiry timestamp.
+
+---
+
+### 4.4 Cancel Food Donation Listing
+- **Method:** `POST`
+- **URL:** `/donations/{id}/cancel`
+- **Access:** `DONOR` (Owner only), `ADMIN`
+- **Rules:** Transitions listing to `CANCELLED`. Cannot cancel `COMPLETED` or `EXPIRED` listings.
+
+---
+
+### 4.5 Donor's Own Listings
+- **Method:** `GET`
+- **URL:** `/donations/mine?page=0&size=10`
+- **Access:** `DONOR`, `ADMIN`
+- **Response:** Paginated list of all listings created by the authenticated donor (including drafts).
+
+---
+
+### 4.6 Public Surplus Food Discovery
+- **Method:** `GET`
+- **URL:** `/donations/public?category=COOKED_MEALS&dietaryType=PURE_VEG&city=Bengaluru&query=Pulao&page=0&size=12`
+- **Access:** Public (Unauthenticated)
+- **Rules:** Filters strictly for `status = 'AVAILABLE'` and `expiryTime > Instant.now()`. Drafts and expired listings are excluded.
+

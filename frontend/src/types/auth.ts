@@ -66,3 +66,4 @@ export interface UserSummary {
   pincode?: string;
   profileDetails?: Record<string, any>;
 }
+

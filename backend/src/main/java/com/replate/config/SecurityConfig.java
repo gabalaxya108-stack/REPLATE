@@ -93,6 +93,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/donations/**").hasAnyRole("DONOR", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/donations/**").hasAnyRole("DONOR", "ADMIN")
 
+                        // Request operations
+                        .requestMatchers("/api/v1/requests/mine/**").hasAnyRole("NGO", "ADMIN")
+                        .requestMatchers("/api/v1/requests/received/**").hasAnyRole("DONOR", "ADMIN")
+                        .requestMatchers("/api/v1/requests/**").authenticated()
+
                         // Role-specific endpoints
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/donors/**").hasAnyRole("DONOR", "ADMIN")

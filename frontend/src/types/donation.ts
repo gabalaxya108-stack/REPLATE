@@ -59,3 +59,4 @@ export interface PageResponse<T> {
   totalPages: number;
   last: boolean;
 }
+

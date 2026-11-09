@@ -65,14 +65,11 @@ public class FoodRequest extends BaseEntity implements Approvable {
         if (!isPendingDecision()) {
             return false;
         }
-        // Deduct from underlying donation
-        boolean deducted = donation.deductQuantity(this.requestedQuantity);
-        if (deducted) {
-            this.status = RequestStatus.APPROVED;
-            this.setUpdatedAt(Instant.now());
-            return true;
-        }
-        return false;
+        // Step 6 Boundary: Request approval records donor approval without deducting stock.
+        // Full atomic allocation and inventory deduction occur in the Allocation engine.
+        this.status = RequestStatus.APPROVED;
+        this.setUpdatedAt(Instant.now());
+        return true;
     }
 
     @Override
@@ -81,7 +78,25 @@ public class FoodRequest extends BaseEntity implements Approvable {
             return false;
         }
         this.status = RequestStatus.REJECTED;
-        this.rejectionReason = rejectionReason;
+        this.rejectionReason = rejectionReason != null ? rejectionReason.trim() : "Request declined by food donor.";
+        this.setUpdatedAt(Instant.now());
+        return true;
+    }
+
+    public boolean withdraw(Long requesterUserId) {
+        if (!isPendingDecision()) {
+            return false;
+        }
+        this.status = RequestStatus.WITHDRAWN;
+        this.setUpdatedAt(Instant.now());
+        return true;
+    }
+
+    public boolean markExpired() {
+        if (!isPendingDecision()) {
+            return false;
+        }
+        this.status = RequestStatus.EXPIRED;
         this.setUpdatedAt(Instant.now());
         return true;
     }

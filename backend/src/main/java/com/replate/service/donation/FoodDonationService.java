@@ -26,3 +26,4 @@ public interface FoodDonationService {
 
     int refreshExpiredDonations();
 }
+

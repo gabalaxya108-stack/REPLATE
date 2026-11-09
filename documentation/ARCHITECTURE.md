@@ -90,6 +90,7 @@ flowchart TD
 - **Technology:** Java 21, Spring Boot 3.3.x, Spring Data JPA, Hibernate, Bean Validation (JSR 380).
 - **Core Pattern:** Controller $\to$ Service $\to$ Repository $\to$ Entity.
 - **Isolation:** DTOs (Data Transfer Objects) are strictly separated from Hibernate entities to prevent leaky domain boundaries and accidental mass assignment vulnerabilities.
+- **Request & Claim Boundary Separation:** The NGO request workflow (`FoodRequestService`) models redistribution intent and donor authorization without prematurely altering inventory stock. Stock deduction and `Allocation` record creation are strictly encapsulated within `AllocationService` under concurrency control.
 
 ### 3.3 Database Layer (`/database`)
 - **Engine:** PostgreSQL 15+.
