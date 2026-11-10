@@ -98,6 +98,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/requests/received/**").hasAnyRole("DONOR", "ADMIN")
                         .requestMatchers("/api/v1/requests/**").authenticated()
 
+                        // Allocation operations
+                        .requestMatchers(HttpMethod.POST, "/api/v1/allocations").hasAnyRole("DONOR", "ADMIN")
+                        .requestMatchers("/api/v1/allocations/donation/**").hasAnyRole("DONOR", "ADMIN")
+                        .requestMatchers("/api/v1/allocations/**").authenticated()
+
                         // Role-specific endpoints
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/donors/**").hasAnyRole("DONOR", "ADMIN")

@@ -387,104 +387,93 @@ In the event of an error (HTTP 400, 401, 403, 404, 409, 500), `success` is `fals
 - **Access:** Requesting `NGO`, `ADMIN`
 - **Rules:** Request must be `PENDING`. Allows the NGO to cancel its own claim prior to donor review.
 
-
-
 ---
 
-## 4. Food Donation Lifecycle & Inventory Endpoints
+## 6. Food Stock Allocation Endpoints
 
-### 4.1 Create Food Donation Listing
+### 6.1 Create Food Allocation (Inventory Deduction)
 - **Method:** `POST`
-- **URL:** `/donations`
-- **Access:** `DONOR`, `ADMIN` (`Authorization: Bearer <token>`)
-- **Parameters:** `publishImmediately` (boolean, default `false`)
-- **Rules:**
-  - `totalQuantity` must be strictly positive (`> 0`).
-  - `expiryTime` must be strictly after `preparationTime`.
-  - If `publishImmediately == true`, `expiryTime` must be strictly after `Instant.now()`, creating listing in `AVAILABLE` state.
-  - If `publishImmediately == false`, initial status is `DRAFT` (private, invisible to public feed).
+- **URL:** `/allocations`
+- **Access:** Owning `DONOR`, `ADMIN`
+- **Concurrency & Transaction Rules:**
+  - Enforces Spring `@Transactional(isolation = Isolation.READ_COMMITTED)`.
+  - Acquires exclusive row-level lock (`PESSIMISTIC_WRITE` $\to$ `SELECT ... FOR UPDATE`) on target `FoodRequest` and `FoodDonation` entities.
+  - Re-reads authoritative inventory and calculates remaining unallocated request balance inside the transaction.
+  - Atomically deducts `availableQuantity` on the donation and transitions status to `PARTIALLY_ALLOCATED` or `FULLY_ALLOCATED`.
+  - Rejects attempts where requested quantity exceeds available stock or request balance.
+  - Rejects attempts on expired, cancelled, or completed batches.
+  - Captures `allocatedBy` actor identity for complete audit accountability.
 
-#### Request Body Schema (`CreateDonationRequestDTO`):
+#### Request Body Schema (`CreateAllocationDTO`):
 ```json
 {
-  "title": "Saravana Bhavan South Indian Lunch Thali",
-  "category": "COOKED_MEALS",
-  "totalQuantity": 75.00,
-  "quantityUnit": "MEAL_BOXES",
-  "dietaryType": "PURE_VEG",
-  "storageCondition": "HOT_INSULATED",
-  "preparationTime": "2026-11-09T05:30:00Z",
-  "expiryTime": "2026-11-09T12:00:00Z",
-  "pickupNotes": "Packed in 3-tier insulated containers at Indiranagar kitchen.",
-  "publishImmediately": true
+  "requestId": 35,
+  "allocatedQuantity": 25.00,
+  "notes": "First partial batch dispatch of 25 boxes"
 }
 ```
 
-#### Success Response (`HTTP 201 Created`):
+#### Response (`AllocationResponseDTO`):
 ```json
 {
   "success": true,
-  "message": "Food donation published successfully and is now active for NGO requests.",
+  "message": "Food stock allocated successfully. Dispatch awaiting volunteer assignment.",
   "data": {
-    "id": 18,
+    "id": 11,
+    "requestId": 35,
+    "donationId": 79,
+    "donationTitle": "Fresh Paneer Butter Masala & Kulcha",
+    "donationCategory": "COOKED_MEALS",
+    "quantityUnit": "MEAL_BOXES",
+    "allocatedQuantity": 25.00,
+    "status": "AWAITING_PICKUP",
     "donorId": 1,
     "donorName": "Saravana Bhavan Foods Pvt Ltd",
-    "donorCity": "Bengaluru",
-    "title": "Saravana Bhavan South Indian Lunch Thali",
-    "category": "COOKED_MEALS",
-    "totalQuantity": 75.00,
-    "availableQuantity": 75.00,
-    "quantityUnit": "MEAL_BOXES",
-    "dietaryType": "PURE_VEG",
-    "storageCondition": "HOT_INSULATED",
-    "status": "AVAILABLE",
-    "statusDescription": "Available for NGOs (75.00 Meal Boxes / Thalis remaining)",
-    "progressPercentage": 25,
-    "terminal": false
+    "ngoId": 4,
+    "ngoName": "Robin Hood Army (Bengaluru)",
+    "allocatedById": 1,
+    "allocatedByName": "Saravana Bhavan Foods Pvt Ltd",
+    "requestRequestedQuantity": 40.00,
+    "donationAvailableQuantity": 35.00,
+    "donationTotalQuantity": 60.00,
+    "createdAt": "2026-11-10T11:24:15.735361Z"
   }
 }
 ```
 
 ---
 
-### 4.2 Update Food Donation Listing
-- **Method:** `PUT`
-- **URL:** `/donations/{id}`
-- **Access:** `DONOR` (Owner only), `ADMIN`
+### 6.2 Authenticated User Allocations
+- **Method:** `GET`
+- **URL:** `/allocations/mine?page=0&size=10`
+- **Access:** `DONOR`, `NGO`, `ADMIN`
 - **Rules:**
-  - Allowed only when status is `DRAFT` or `AVAILABLE`.
-  - Total quantity cannot be reduced below already allocated stock.
-  - Ownership is strictly enforced; non-owner gets `HTTP 403 Forbidden`.
+  - Donors receive all outgoing allocations created from their kitchens.
+  - NGOs receive all incoming allocations committed to their organization.
+  - Admins receive all system allocations.
 
 ---
 
-### 4.3 Publish Draft Listing
-- **Method:** `POST`
-- **URL:** `/donations/{id}/publish`
-- **Access:** `DONOR` (Owner only), `ADMIN`
-- **Rules:** Transitions listing from `DRAFT` to `AVAILABLE`. Requires future expiry timestamp.
-
----
-
-### 4.4 Cancel Food Donation Listing
-- **Method:** `POST`
-- **URL:** `/donations/{id}/cancel`
-- **Access:** `DONOR` (Owner only), `ADMIN`
-- **Rules:** Transitions listing to `CANCELLED`. Cannot cancel `COMPLETED` or `EXPIRED` listings.
-
----
-
-### 4.5 Donor's Own Listings
+### 6.3 Get Allocation By ID
 - **Method:** `GET`
-- **URL:** `/donations/mine?page=0&size=10`
-- **Access:** `DONOR`, `ADMIN`
-- **Response:** Paginated list of all listings created by the authenticated donor (including drafts).
+- **URL:** `/allocations/{id}`
+- **Access:** Owning `DONOR`, receiving `NGO`, or `ADMIN`. Unauthorized access returns `HTTP 403 Forbidden`.
 
 ---
 
-### 4.6 Public Surplus Food Discovery
+### 6.4 List Allocations By Donation Listing
 - **Method:** `GET`
-- **URL:** `/donations/public?category=COOKED_MEALS&dietaryType=PURE_VEG&city=Bengaluru&query=Pulao&page=0&size=12`
-- **Access:** Public (Unauthenticated)
-- **Rules:** Filters strictly for `status = 'AVAILABLE'` and `expiryTime > Instant.now()`. Drafts and expired listings are excluded.
+- **URL:** `/allocations/donation/{donationId}`
+- **Access:** Owning `DONOR`, `ADMIN`
+- **Response:** List of all allocation batches drawn against the given donation ID.
+
+---
+
+### 6.5 List Allocations By Approved Request
+- **Method:** `GET`
+- **URL:** `/allocations/request/{requestId}`
+- **Access:** Owning `DONOR`, receiving `NGO`, or `ADMIN`
+- **Response:** List of all allocation batches fulfilling the given approved request ID.
+
+
 

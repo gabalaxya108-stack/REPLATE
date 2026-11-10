@@ -2,10 +2,12 @@ package com.replate.repository;
 
 import com.replate.domain.entity.FoodDonation;
 import com.replate.domain.enums.DonationStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -16,6 +18,10 @@ import java.util.Optional;
 
 @Repository
 public interface FoodDonationRepository extends JpaRepository<FoodDonation, Long>, JpaSpecificationExecutor<FoodDonation> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT d FROM FoodDonation d WHERE d.id = :id")
+    Optional<FoodDonation> findByIdWithPessimisticLock(@Param("id") Long id);
 
     @Query("SELECT d FROM FoodDonation d JOIN FETCH d.donor dp JOIN FETCH dp.user u WHERE d.id = :id")
     Optional<FoodDonation> findByIdWithDonorDetails(@Param("id") Long id);

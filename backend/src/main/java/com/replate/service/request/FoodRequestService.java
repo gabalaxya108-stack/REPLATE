@@ -21,3 +21,4 @@ public interface FoodRequestService {
 
     FoodRequestResponseDTO withdrawRequest(Long requestId, Long ngoUserId);
 }
+

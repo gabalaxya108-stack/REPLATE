@@ -121,21 +121,36 @@ Formal requests submitted by NGOs for specific quantities.
 | `rejection_reason` | `VARCHAR(255)` | NULLABLE | Donor justification if declined |
 | `created_at` | `TIMESTAMP WITH TIME ZONE` | DEFAULT NOW() | Timestamp |
 
-### 2.7 `allocation` & `delivery_task`
-Finalized claims and transport executions.
+### 2.7 `allocation`
+Finalized claims with deducted inventory.
 
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | `BIGSERIAL` | PRIMARY KEY | Unique allocation ID |
-| `request_id` | `BIGINT` | NOT NULL, UNIQUE, FK(`food_request.id`) | Tied request |
-| `donation_id` | `BIGINT` | NOT NULL, FK(`food_donation.id`) | Tied donation |
-| `allocated_quantity`| `NUMERIC(10,2)` | NOT NULL | Confirmed quantity |
-| `allocation_status` | `VARCHAR(30)` | NOT NULL DEFAULT 'AWAITING_PICKUP' | `AWAITING_PICKUP`, `IN_TRANSIT`, `DELIVERED`, `CANCELLED` |
-| `assigned_volunteer_id`| `BIGINT` | NULLABLE, FK(`volunteer_profile.user_id`) | Assigned driver/volunteer |
+| `request_id` | `BIGINT` | NOT NULL, FK(`food_request.id`) | Tied approved food request |
+| `donation_id` | `BIGINT` | NOT NULL, FK(`food_donation.id`) | Source food donation batch |
+| `allocated_quantity`| `NUMERIC(10,2)` | NOT NULL, CHECK(`allocated_quantity > 0`) | Deducted and committed quantity |
+| `status` | `VARCHAR(30)` | NOT NULL DEFAULT 'AWAITING_PICKUP' | `AWAITING_PICKUP`, `IN_TRANSIT`, `DELIVERED`, `CANCELLED` |
+| `allocated_by` | `BIGINT` | NULLABLE, FK(`app_user.id`) | Donor or Admin who authorized the allocation |
+| `created_at` | `TIMESTAMP WITH TIME ZONE` | DEFAULT CURRENT_TIMESTAMP | Timestamp of allocation |
+| `updated_at` | `TIMESTAMP WITH TIME ZONE` | DEFAULT CURRENT_TIMESTAMP | Timestamp of last update |
+
+*Indexes:* `idx_allocation_request (request_id)`, `idx_allocation_donation (donation_id)`.
+
+### 2.8 `delivery_task`
+Volunteer logistics and chain-of-custody execution.
+
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `BIGSERIAL` | PRIMARY KEY | Unique task ID |
+| `allocation_id` | `BIGINT` | NOT NULL, UNIQUE, FK(`allocation.id`) | Allocation awaiting delivery |
+| `volunteer_id` | `BIGINT` | NULLABLE, FK(`volunteer_profile.user_id`) | Assigned driver/volunteer |
+| `status` | `VARCHAR(30)` | NOT NULL DEFAULT 'UNASSIGNED' | `UNASSIGNED`, `ASSIGNED`, `PICKED_UP`, `DELIVERED`, `FAILED` |
 | `pickup_otp` | `VARCHAR(6)` | NOT NULL | 6-digit verification code |
 | `delivery_otp` | `VARCHAR(6)` | NOT NULL | 6-digit delivery confirmation code |
 | `picked_up_at` | `TIMESTAMP WITH TIME ZONE` | NULLABLE | Actual timestamp of pickup |
 | `delivered_at` | `TIMESTAMP WITH TIME ZONE` | NULLABLE | Actual timestamp of delivery |
+| `notes` | `TEXT` | NULLABLE | Special handling notes |
 
 ---
 

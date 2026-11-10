@@ -3,6 +3,7 @@ import { api, ApiError } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { DonationResponse, CreateDonationRequest, UpdateDonationRequest } from '../types/donation';
 import { FoodRequestResponse } from '../types/request';
+import { AllocationResponse } from '../types/allocation';
 import { FoodCategory, QuantityUnit, DietaryType, StorageCondition, DonationStatus } from '../types';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -11,7 +12,7 @@ import { Input } from '../components/common/Input';
 import { 
   Plus, Edit3, Send, XCircle, Clock, Utensils, AlertCircle, 
   CheckCircle2, RefreshCw, Eye, MapPin, ChefHat, ShieldCheck,
-  Building2, Check, MessageSquare
+  Building2, Check, MessageSquare, PackageCheck
 } from 'lucide-react';
 
 export const DonorDashboard: React.FC = () => {
@@ -34,6 +35,14 @@ export const DonorDashboard: React.FC = () => {
   const [rejectionReason, setRejectionReason] = useState<string>('');
   const [isSubmittingReject, setIsSubmittingReject] = useState<boolean>(false);
   const [rejectError, setRejectError] = useState<string | null>(null);
+
+  // Allocation Engine State
+  const [allocations, setAllocations] = useState<AllocationResponse[]>([]);
+  const [allocatingRequest, setAllocatingRequest] = useState<FoodRequestResponse | null>(null);
+  const [allocQuantity, setAllocQuantity] = useState<string>('');
+  const [allocNotes, setAllocNotes] = useState<string>('');
+  const [isSubmittingAlloc, setIsSubmittingAlloc] = useState<boolean>(false);
+  const [allocError, setAllocError] = useState<string | null>(null);
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -97,10 +106,73 @@ export const DonorDashboard: React.FC = () => {
     }
   }, []);
 
+  const fetchMyAllocations = useCallback(async () => {
+    try {
+      const res = await api.getMyAllocations(0, 100);
+      setAllocations(res.content);
+    } catch (err: any) {
+      console.error('Failed to load allocations:', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchMyDonations();
     fetchReceivedRequests();
-  }, [fetchMyDonations, fetchReceivedRequests]);
+    fetchMyAllocations();
+  }, [fetchMyDonations, fetchReceivedRequests, fetchMyAllocations]);
+
+  const allocatedByRequestId = React.useMemo(() => {
+    const map: Record<number, number> = {};
+    for (const a of allocations) {
+      if (a.status !== 'CANCELLED') {
+        map[a.requestId] = (map[a.requestId] || 0) + Number(a.allocatedQuantity);
+      }
+    }
+    return map;
+  }, [allocations]);
+
+  const handleOpenAllocModal = (req: FoodRequestResponse) => {
+    setAllocatingRequest(req);
+    const allocated = allocatedByRequestId[req.id] || 0;
+    const remainingReq = Math.max(0, req.requestedQuantity - allocated);
+    const matchingDonation = donations.find(d => d.id === req.donationId);
+    const availStock = matchingDonation ? matchingDonation.availableQuantity : req.donationAvailableQuantity;
+    const defaultQty = Math.min(remainingReq, availStock);
+    setAllocQuantity(defaultQty > 0 ? defaultQty.toString() : '');
+    setAllocNotes('');
+    setAllocError(null);
+  };
+
+  const handleConfirmAllocation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!allocatingRequest) return;
+
+    const qty = parseFloat(allocQuantity);
+    if (isNaN(qty) || qty <= 0) {
+      setAllocError('Allocation quantity must be strictly greater than zero.');
+      return;
+    }
+
+    setIsSubmittingAlloc(true);
+    setAllocError(null);
+    try {
+      await api.createAllocation({
+        requestId: allocatingRequest.id,
+        allocatedQuantity: qty,
+        notes: allocNotes.trim() || undefined,
+      });
+      setAllocatingRequest(null);
+      setSuccessMessage(`Inventory committed! ${qty} ${allocatingRequest.donationQuantityUnit} allocated to ${allocatingRequest.ngoName}. Stock deducted in PostgreSQL.`);
+      fetchMyDonations();
+      fetchReceivedRequests();
+      fetchMyAllocations();
+      setTimeout(() => setSuccessMessage(null), 6000);
+    } catch (err: any) {
+      setAllocError(err instanceof ApiError ? err.message : 'Failed to allocate food inventory.');
+    } finally {
+      setIsSubmittingAlloc(false);
+    }
+  };
 
   const handleApproveRequest = async (id: number) => {
     setApprovingRequestId(id);
@@ -819,17 +891,48 @@ export const DonorDashboard: React.FC = () => {
                       </>
                     )}
 
-                    {claim.status === 'APPROVED' && (
-                      <div className="text-right">
-                        <span className="text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-                          Approved Claim
-                        </span>
-                        <span className="text-[10px] text-ink-muted mt-1 block">
-                          Stock reserved; allocation in Step 7
-                        </span>
-                      </div>
-                    )}
+                    {claim.status === 'APPROVED' && (() => {
+                      const allocated = allocatedByRequestId[claim.id] || 0;
+                      const remainingReq = Math.max(0, claim.requestedQuantity - allocated);
+                      const matchingDonation = donations.find(d => d.id === claim.donationId);
+                      const availStock = matchingDonation ? matchingDonation.availableQuantity : claim.donationAvailableQuantity;
+                      const isFullyAllocated = remainingReq === 0;
+
+                      return (
+                        <div className="flex flex-col items-end gap-1.5">
+                          <div className="flex items-center gap-2">
+                            {isFullyAllocated ? (
+                              <span className="text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                                Fully Allocated ({allocated} {claim.donationQuantityUnit})
+                              </span>
+                            ) : (
+                              <div className="text-right">
+                                <span className="text-xs font-bold text-blue-800 bg-blue-100 border border-blue-300 px-2.5 py-1 rounded-md block mb-1">
+                                  Approved: {allocated > 0 ? `${allocated} / ${claim.requestedQuantity}` : `${claim.requestedQuantity}`} {claim.donationQuantityUnit}
+                                </span>
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  onClick={() => handleOpenAllocModal(claim)}
+                                  disabled={availStock <= 0}
+                                  leftIcon={<PackageCheck className="w-4 h-4" />}
+                                >
+                                  {allocated > 0 ? 'Allocate Remaining' : 'Allocate Stock'}
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-[11px] text-ink-secondary">
+                            {isFullyAllocated
+                              ? 'Inventory committed; awaiting volunteer assignment'
+                              : availStock > 0
+                                ? `Batch stock available: ${availStock} ${claim.donationQuantityUnit}`
+                                : 'Donation inventory currently exhausted'}
+                          </span>
+                        </div>
+                      );
+                    })()}
 
                     {claim.status === 'REJECTED' && (
                       <span className="text-xs font-medium text-red-700 bg-red-50 border border-red-200 px-3 py-1 rounded-lg">
@@ -1176,6 +1279,131 @@ export const DonorDashboard: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Allocation Engine Modal */}
+      {allocatingRequest && (() => {
+        const allocated = allocatedByRequestId[allocatingRequest.id] || 0;
+        const remainingReq = Math.max(0, allocatingRequest.requestedQuantity - allocated);
+        const matchingDonation = donations.find(d => d.id === allocatingRequest.donationId);
+        const availStock = matchingDonation ? matchingDonation.availableQuantity : allocatingRequest.donationAvailableQuantity;
+        const maxPossible = Math.min(remainingReq, availStock);
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+            <div className="bg-surface border border-border rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    Transactional Food Allocation
+                  </span>
+                  <h3 className="text-lg font-bold text-ink-primary mt-1">
+                    Allocate to {allocatingRequest.ngoName}
+                  </h3>
+                  <p className="text-xs text-ink-secondary mt-0.5">
+                    Batch: {allocatingRequest.donationTitle}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setAllocatingRequest(null)}
+                  disabled={isSubmittingAlloc}
+                  className="text-ink-secondary hover:text-ink-primary p-1 rounded-lg"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Stock and Request Summary Card */}
+              <div className="p-3.5 bg-warm-muted/70 rounded-xl space-y-2 text-xs border border-border/60">
+                <div className="flex justify-between items-center">
+                  <span className="text-ink-secondary">Approved Request Balance:</span>
+                  <span className="font-extrabold text-ink-primary">
+                    {remainingReq} of {allocatingRequest.requestedQuantity} {allocatingRequest.donationQuantityUnit}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-ink-secondary">Donation Stock Available:</span>
+                  <span className="font-extrabold text-forest">
+                    {availStock} {allocatingRequest.donationQuantityUnit}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center border-t border-border/60 pt-1.5 text-ink-secondary">
+                  <span>Max Allocatable Right Now:</span>
+                  <span className="font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                    {maxPossible} {allocatingRequest.donationQuantityUnit}
+                  </span>
+                </div>
+              </div>
+
+              {allocError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
+                  <span>{allocError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleConfirmAllocation} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-ink-primary mb-1">
+                    Allocation Quantity ({allocatingRequest.donationQuantityUnit}) *
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    max={maxPossible}
+                    value={allocQuantity}
+                    onChange={(e) => setAllocQuantity(e.target.value)}
+                    placeholder={`Max ${maxPossible}`}
+                    required
+                  />
+                  <div className="flex items-center justify-between mt-1 text-[11px] text-ink-muted">
+                    <span>Full or partial allocation authorized</span>
+                    <button
+                      type="button"
+                      onClick={() => setAllocQuantity(maxPossible.toString())}
+                      className="text-forest hover:underline font-bold"
+                    >
+                      Fill Max ({maxPossible})
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-ink-primary mb-1">
+                    Dispatch & Staging Notes (Optional)
+                  </label>
+                  <Input
+                    value={allocNotes}
+                    onChange={(e) => setAllocNotes(e.target.value)}
+                    placeholder="e.g. Staged at rear dispatch loading dock, ready for volunteer pickup."
+                  />
+                </div>
+
+                <div className="pt-2 border-t border-border flex items-center justify-end gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setAllocatingRequest(null)}
+                    disabled={isSubmittingAlloc}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="sm"
+                    disabled={isSubmittingAlloc || maxPossible <= 0}
+                    leftIcon={isSubmittingAlloc ? <RefreshCw className="w-4 h-4 animate-spin" /> : <PackageCheck className="w-4 h-4" />}
+                  >
+                    {isSubmittingAlloc ? 'Allocating...' : 'Confirm & Deduct Stock'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };

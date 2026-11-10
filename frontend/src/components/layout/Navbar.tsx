@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../common/Button';
 import { useAuth } from '../../context/AuthContext';
-import { Menu, X, ArrowUpRight, LogOut, User as UserIcon, PlusCircle, ChefHat } from 'lucide-react';
+import { Menu, X, ArrowUpRight, LogOut, User as UserIcon, PlusCircle, ChefHat, Building2 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,10 +10,12 @@ export const Navbar: React.FC = () => {
   const navigate = useNavigate();
 
   const isDonor = user?.role === 'DONOR';
+  const isNgo = user?.role === 'NGO';
 
   const navLinks = [
     { label: 'Live Food Feed', path: '/explore' },
     ...(isDonor ? [{ label: 'My Food Listings', path: '/donor/donations' }] : []),
+    ...(isNgo ? [{ label: 'My Food Claims', path: '/ngo/requests' }] : []),
     { label: 'How Replate Works', path: '/#how-it-works' },
     { label: 'Impact Metrics', path: '/#impact' },
     { label: 'Partner Network', path: '/#network' },
@@ -113,9 +115,17 @@ export const Navbar: React.FC = () => {
                 </Link>
               )}
 
+              {isNgo && (
+                <Link to="/ngo/requests">
+                  <Button variant="outline" size="sm" leftIcon={<Building2 className="w-4 h-4" />}>
+                    My Claims
+                  </Button>
+                </Link>
+              )}
+
               <div className="flex items-center gap-2 bg-surface px-3 py-1.5 rounded-xl border border-border shadow-xs">
                 <div className="w-8 h-8 rounded-lg bg-forest/10 text-forest flex items-center justify-center font-bold text-xs">
-                  {isDonor ? <ChefHat className="w-4 h-4" /> : user.fullName ? user.fullName.charAt(0).toUpperCase() : <UserIcon className="w-4 h-4" />}
+                  {isDonor ? <ChefHat className="w-4 h-4" /> : isNgo ? <Building2 className="w-4 h-4" /> : user.fullName ? user.fullName.charAt(0).toUpperCase() : <UserIcon className="w-4 h-4" />}
                 </div>
                 <div className="text-left">
                   <div className="flex items-center gap-1.5">

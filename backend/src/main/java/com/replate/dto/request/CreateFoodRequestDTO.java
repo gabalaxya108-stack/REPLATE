@@ -52,3 +52,4 @@ public class CreateFoodRequestDTO {
         this.intendedBeneficiaries = intendedBeneficiaries;
     }
 }
+

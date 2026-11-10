@@ -23,3 +23,4 @@ public class RejectFoodRequestDTO {
         this.rejectionReason = rejectionReason;
     }
 }
+

@@ -15,7 +15,8 @@
 | `DonorRegistrationPersistenceE2ETest` | End-to-End Test | 1 | Verifies the complete lifecycle: HTTP registration call $\to$ PostgreSQL `app_user` row creation $\to$ BCrypt hash check $\to$ `donor_profile` foreign key persistence $\to$ authenticated `/api/v1/auth/me` profile retrieval $\to$ subsequent login $\to$ duplicate constraint enforcement. |
 | `FoodDonationLifecycleIntegrationTest` | Integration Test | 9 | Tests complete donation lifecycle: draft creation, immediate publishing, invalid quantity rejection, expiry-before-preparation rejection, draft-to-available transition, donor ownership enforcement, cancellation rules, public discovery draft privacy, and paginated donor listings. |
 | `FoodRequestLifecycleIntegrationTest` | Integration Test | 10 | Tests complete food request lifecycle: claim submission by NGO, non-NGO rejection, invalid request against draft/expired batches, excessive quantity rejection, duplicate pending request conflict prevention, donor approval without premature inventory deduction, donor rejection with reason, NGO withdrawal of pending claim, terminal state mutation prevention, and role-based data isolation. |
-| **Total Automated Tests** | **All Layers** | **34** | **100% Passing (0 failures, 0 errors, 0 skipped)** |
+| `FoodAllocationLifecycleIntegrationTest` | Integration & Concurrency Test | 17 | Tests complete allocation engine: full allocation, partial allocation, pending/rejected/withdrawn claim rejections, expired donation blockage, negative quantity rejections, request & donation bound violations, multiple allocations per request, inventory exhaustion enforcement, unauthorized actor rejections, status transitions (PARTIALLY_ALLOCATED and FULLY_ALLOCATED), rollback safety, and multi-threaded concurrency safety with 5 concurrent threads asserting zero overselling. |
+| **Total Automated Tests** | **All Layers** | **51** | **100% Passing (0 failures, 0 errors, 0 skipped)** |
 
 ---
 

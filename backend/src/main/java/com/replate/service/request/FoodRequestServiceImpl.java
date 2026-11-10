@@ -186,3 +186,4 @@ public class FoodRequestServiceImpl implements FoodRequestService {
         return FoodRequestResponseDTO.fromEntity(updated);
     }
 }
+

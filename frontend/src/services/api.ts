@@ -1,6 +1,7 @@
 import { ApiResponse, AuthResponse, LoginRequest, RegisterRequest, UserSummary } from '../types/auth';
 import { CreateDonationRequest, DonationResponse, PageResponse, UpdateDonationRequest } from '../types/donation';
 import { CreateFoodRequest, FoodRequestResponse, RejectFoodRequest } from '../types/request';
+import { AllocationResponse, CreateAllocationRequest } from '../types/allocation';
 
 const BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api/v1';
 
@@ -204,6 +205,38 @@ class ApiClient {
   async withdrawFoodRequest(id: number): Promise<FoodRequestResponse> {
     return this.request<FoodRequestResponse>(`/requests/${id}/withdraw`, {
       method: 'POST',
+    });
+  }
+
+  // Food Allocation Endpoints
+  async createAllocation(payload: CreateAllocationRequest): Promise<AllocationResponse> {
+    return this.request<AllocationResponse>('/allocations', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getMyAllocations(page = 0, size = 10): Promise<PageResponse<AllocationResponse>> {
+    return this.request<PageResponse<AllocationResponse>>(`/allocations/mine?page=${page}&size=${size}`, {
+      method: 'GET',
+    });
+  }
+
+  async getAllocationById(id: number): Promise<AllocationResponse> {
+    return this.request<AllocationResponse>(`/allocations/${id}`, {
+      method: 'GET',
+    });
+  }
+
+  async getAllocationsByDonation(donationId: number): Promise<AllocationResponse[]> {
+    return this.request<AllocationResponse[]>(`/allocations/donation/${donationId}`, {
+      method: 'GET',
+    });
+  }
+
+  async getAllocationsByRequest(requestId: number): Promise<AllocationResponse[]> {
+    return this.request<AllocationResponse[]>(`/allocations/request/${requestId}`, {
+      method: 'GET',
     });
   }
 }

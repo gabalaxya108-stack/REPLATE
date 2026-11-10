@@ -47,3 +47,4 @@ export interface CreateFoodRequest {
 export interface RejectFoodRequest {
   rejectionReason: string;
 }
+

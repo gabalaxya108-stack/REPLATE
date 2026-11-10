@@ -98,13 +98,16 @@ CREATE TABLE food_request (
 -- 7. Allocation Record
 CREATE TABLE allocation (
     id BIGSERIAL PRIMARY KEY,
-    request_id BIGINT NOT NULL UNIQUE REFERENCES food_request(id) ON DELETE RESTRICT,
+    request_id BIGINT NOT NULL REFERENCES food_request(id) ON DELETE RESTRICT,
     donation_id BIGINT NOT NULL REFERENCES food_donation(id) ON DELETE RESTRICT,
     allocated_quantity NUMERIC(10,2) NOT NULL CHECK (allocated_quantity > 0),
     status VARCHAR(30) NOT NULL DEFAULT 'AWAITING_PICKUP' CHECK (status IN ('AWAITING_PICKUP', 'IN_TRANSIT', 'DELIVERED', 'CANCELLED')),
+    allocated_by BIGINT REFERENCES app_user(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+CREATE INDEX idx_allocation_request ON allocation(request_id);
+CREATE INDEX idx_allocation_donation ON allocation(donation_id);
 
 -- 8. Delivery Task
 CREATE TABLE delivery_task (
