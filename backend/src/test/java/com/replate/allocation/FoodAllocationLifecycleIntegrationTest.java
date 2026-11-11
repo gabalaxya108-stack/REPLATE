@@ -556,3 +556,4 @@ public class FoodAllocationLifecycleIntegrationTest {
         assertThat(totalAllocatedInDb).isEqualByComparingTo("40.00");
     }
 }
+

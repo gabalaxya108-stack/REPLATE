@@ -307,3 +307,4 @@ public class AllocationResponseDTO {
         this.updatedAt = updatedAt;
     }
 }
+

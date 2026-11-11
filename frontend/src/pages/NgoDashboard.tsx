@@ -4,13 +4,14 @@ import { api, ApiError } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { FoodRequestResponse } from '../types/request';
 import { AllocationResponse } from '../types/allocation';
+import { DeliveryTaskResponse } from '../types/delivery';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Badge } from '../components/common/Badge';
 import { 
   Building2, RefreshCw, AlertCircle, CheckCircle2, Clock, 
   MapPin, Utensils, XCircle, ShieldCheck, PackageCheck, 
-  Truck, FileText, Phone
+  Truck, FileText, Phone, KeyRound, User
 } from 'lucide-react';
 
 export const NgoDashboard: React.FC = () => {
@@ -26,6 +27,7 @@ export const NgoDashboard: React.FC = () => {
 
   // Allocations State
   const [allocations, setAllocations] = useState<AllocationResponse[]>([]);
+  const [deliveries, setDeliveries] = useState<DeliveryTaskResponse[]>([]);
   const [isLoadingAllocations, setIsLoadingAllocations] = useState(false);
   const [allocFilter, setAllocFilter] = useState<string>('ALL');
 
@@ -45,8 +47,12 @@ export const NgoDashboard: React.FC = () => {
   const fetchMyAllocations = useCallback(async () => {
     setIsLoadingAllocations(true);
     try {
-      const res = await api.getMyAllocations(0, 50);
-      setAllocations(res.content);
+      const [resAlloc, resDeliv] = await Promise.all([
+        api.getMyAllocations(0, 50),
+        api.getMyDeliveries().catch(() => []),
+      ]);
+      setAllocations(resAlloc.content);
+      setDeliveries(resDeliv);
     } catch (err: any) {
       console.error('Failed to load allocations:', err);
     } finally {
@@ -544,13 +550,76 @@ export const NgoDashboard: React.FC = () => {
                   </div>
 
                   <div className="flex md:flex-col items-end justify-center gap-2 shrink-0 border-t md:border-t-0 pt-3 md:pt-0 border-border text-right">
-                    <span className="text-xs font-bold text-ink-primary bg-warm-card border border-border px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-                      <Truck className="w-4 h-4 text-forest" />
-                      Step 8 Volunteer Dispatch
-                    </span>
-                    <span className="text-[10px] text-ink-muted">
-                      Allocation ID: #{alloc.id}
-                    </span>
+                    {(() => {
+                      const delivery = deliveries.find((d) => d.allocationId === alloc.id);
+                      if (!delivery) {
+                        return (
+                          <div className="text-right">
+                            <span className="text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                              <Clock className="w-4 h-4 text-amber-600" />
+                              Awaiting Driver Assignment
+                            </span>
+                            <span className="text-[10px] text-ink-muted block mt-1">
+                              Allocation ID: #{alloc.id}
+                            </span>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="space-y-3 w-full md:w-72 text-left">
+                          <div className="bg-warm-bg rounded-xl p-3 border border-border text-xs space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-ink-primary flex items-center gap-1">
+                                <Truck className="w-3.5 h-3.5 text-forest" />
+                                Courier Logistics
+                              </span>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-forest/10 text-forest border border-forest/30">
+                                {delivery.status.replace('_', ' ')}
+                              </span>
+                            </div>
+                            {delivery.volunteer ? (
+                              <div className="text-[11px] text-ink-secondary">
+                                <p className="font-semibold text-ink-primary flex items-center gap-1">
+                                  <User className="w-3 h-3 text-forest" />
+                                  {delivery.volunteer.fullName}
+                                </p>
+                                <p className="text-[10px]">
+                                  Vehicle: {delivery.volunteer.vehicleType} · {delivery.volunteer.phoneNumber}
+                                </p>
+                              </div>
+                            ) : (
+                              <p className="text-[11px] text-ink-muted">Volunteer not assigned yet</p>
+                            )}
+                          </div>
+
+                          {/* Delivery Confirmation OTP for NGO */}
+                          {delivery.deliveryOtp && delivery.status !== 'DELIVERED' && (
+                            <div className="bg-emerald-50 border border-emerald-300 rounded-xl p-3 text-left">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-1 mb-1">
+                                <KeyRound className="w-3 h-3 text-emerald-600" />
+                                Delivery Confirmation PIN
+                              </span>
+                              <div className="flex items-center justify-between">
+                                <span className="font-mono text-lg font-extrabold tracking-widest text-emerald-900 bg-white px-2.5 py-0.5 rounded border border-emerald-200">
+                                  {delivery.deliveryOtp}
+                                </span>
+                                <span className="text-[10px] text-emerald-700 max-w-[120px] text-right">
+                                  Share with driver upon arrival
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {delivery.status === 'DELIVERED' && (
+                            <div className="bg-emerald-100 border border-emerald-300 rounded-xl p-2.5 text-center text-xs font-bold text-emerald-900 flex items-center justify-center gap-1.5">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                              Delivered & Received
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </Card>
               ))}

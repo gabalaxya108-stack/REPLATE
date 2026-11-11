@@ -35,3 +35,4 @@ public interface AllocationService {
      */
     Page<AllocationResponseDTO> getMyAllocations(Long actorUserId, String actorRole, Pageable pageable);
 }
+

@@ -67,3 +67,4 @@ public interface AllocationRepository extends JpaRepository<Allocation, Long> {
            countQuery = "SELECT COUNT(a) FROM Allocation a WHERE a.request.ngo.userId = :ngoId")
     Page<Allocation> findByNgoUserId(@Param("ngoId") Long ngoId, Pageable pageable);
 }
+

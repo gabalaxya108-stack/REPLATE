@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../common/Button';
 import { useAuth } from '../../context/AuthContext';
-import { Menu, X, ArrowUpRight, LogOut, User as UserIcon, PlusCircle, ChefHat, Building2 } from 'lucide-react';
+import { Menu, X, ArrowUpRight, LogOut, User as UserIcon, PlusCircle, ChefHat, Building2, Truck } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,11 +11,13 @@ export const Navbar: React.FC = () => {
 
   const isDonor = user?.role === 'DONOR';
   const isNgo = user?.role === 'NGO';
+  const isVolunteer = user?.role === 'VOLUNTEER';
 
   const navLinks = [
     { label: 'Live Food Feed', path: '/explore' },
     ...(isDonor ? [{ label: 'My Food Listings', path: '/donor/donations' }] : []),
     ...(isNgo ? [{ label: 'My Food Claims', path: '/ngo/requests' }] : []),
+    ...(isVolunteer ? [{ label: 'Volunteer Logistics', path: '/volunteer/dashboard' }] : []),
     { label: 'How Replate Works', path: '/#how-it-works' },
     { label: 'Impact Metrics', path: '/#impact' },
     { label: 'Partner Network', path: '/#network' },
@@ -119,6 +121,14 @@ export const Navbar: React.FC = () => {
                 <Link to="/ngo/requests">
                   <Button variant="outline" size="sm" leftIcon={<Building2 className="w-4 h-4" />}>
                     My Claims
+                  </Button>
+                </Link>
+              )}
+
+              {isVolunteer && (
+                <Link to="/volunteer/dashboard">
+                  <Button variant="primary" size="sm" leftIcon={<Truck className="w-4 h-4" />}>
+                    Logistics Runs
                   </Button>
                 </Link>
               )}

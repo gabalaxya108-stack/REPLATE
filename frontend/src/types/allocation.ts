@@ -45,3 +45,4 @@ export interface CreateAllocationRequest {
   allocatedQuantity?: number;
   notes?: string;
 }
+

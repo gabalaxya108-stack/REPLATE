@@ -96,3 +96,9 @@ flowchart TD
 - **Engine:** PostgreSQL 15+.
 - **Integrity:** Strict relational foreign key constraints, check constraints (e.g. quantity $> 0$, expiry $>$ created_at), and pessimistic row locking (`SELECT FOR UPDATE`) on allocation commits to eliminate double-claim race conditions.
 
+### 3.4 Volunteer Assignment & Logistics Delivery Engine (`com.replate.service.delivery`)
+- **State Machine:** `PENDING_ASSIGNMENT` / `UNASSIGNED` $\to$ `ASSIGNED` $\to$ `ACCEPTED` $\to$ `PICKED_UP` $\to$ `IN_TRANSIT` $\to$ `DELIVERED` (Exceptional: `REJECTED`, `CANCELLED`, `FAILED`).
+- **Chain-of-Custody Handshake:** Cryptographically secure dual-OTP verification ensures physical verification at pickup (donor kitchen PIN) and recipient confirmation at drop-off (NGO PIN).
+- **Polymorphism:** Implements `Trackable` for dynamic progress tracking across donations and deliveries.
+- **Stock Invariant Guarantee:** Inventory deduction is strictly isolated to Step 7 allocation; zero duplicate stock deduction occurs during pickup or delivery execution.
+

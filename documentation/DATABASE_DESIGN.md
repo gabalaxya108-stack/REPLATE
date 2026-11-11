@@ -145,12 +145,18 @@ Volunteer logistics and chain-of-custody execution.
 | `id` | `BIGSERIAL` | PRIMARY KEY | Unique task ID |
 | `allocation_id` | `BIGINT` | NOT NULL, UNIQUE, FK(`allocation.id`) | Allocation awaiting delivery |
 | `volunteer_id` | `BIGINT` | NULLABLE, FK(`volunteer_profile.user_id`) | Assigned driver/volunteer |
-| `status` | `VARCHAR(30)` | NOT NULL DEFAULT 'UNASSIGNED' | `UNASSIGNED`, `ASSIGNED`, `PICKED_UP`, `DELIVERED`, `FAILED` |
-| `pickup_otp` | `VARCHAR(6)` | NOT NULL | 6-digit verification code |
-| `delivery_otp` | `VARCHAR(6)` | NOT NULL | 6-digit delivery confirmation code |
-| `picked_up_at` | `TIMESTAMP WITH TIME ZONE` | NULLABLE | Actual timestamp of pickup |
-| `delivered_at` | `TIMESTAMP WITH TIME ZONE` | NULLABLE | Actual timestamp of delivery |
-| `notes` | `TEXT` | NULLABLE | Special handling notes |
+| `status` | `VARCHAR(30)` | NOT NULL DEFAULT 'UNASSIGNED' | `PENDING_ASSIGNMENT`, `UNASSIGNED`, `ASSIGNED`, `ACCEPTED`, `REJECTED`, `PICKED_UP`, `IN_TRANSIT`, `DELIVERED`, `CANCELLED`, `FAILED` |
+| `pickup_otp` | `VARCHAR(6)` | NOT NULL | 6-digit donor kitchen verification code |
+| `delivery_otp` | `VARCHAR(6)` | NOT NULL | 6-digit NGO recipient confirmation code |
+| `assigned_at` | `TIMESTAMP WITH TIME ZONE` | NULLABLE | Timestamp when volunteer was assigned |
+| `accepted_at` | `TIMESTAMP WITH TIME ZONE` | NULLABLE | Timestamp when volunteer accepted assignment |
+| `picked_up_at` | `TIMESTAMP WITH TIME ZONE` | NULLABLE | Actual timestamp of food pickup from donor |
+| `in_transit_at` | `TIMESTAMP WITH TIME ZONE` | NULLABLE | Timestamp when courier initiated transit to NGO |
+| `delivered_at` | `TIMESTAMP WITH TIME ZONE` | NULLABLE | Timestamp when courier completed delivery |
+| `recipient_name`| `VARCHAR(120)` | NULLABLE | Name of NGO recipient acknowledging receipt |
+| `recipient_phone`| `VARCHAR(20)` | NULLABLE | Contact number of acknowledging recipient |
+| `notes` | `TEXT` | NULLABLE | Special handling, dispatch, and temperature notes |
+| `issue_reason` | `TEXT` | NULLABLE | Failure or decline reason if rejected or reported |
 
 ---
 

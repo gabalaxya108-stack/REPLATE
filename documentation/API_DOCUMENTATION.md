@@ -475,5 +475,120 @@ In the event of an error (HTTP 400, 401, 403, 404, 409, 500), `success` is `fals
 - **Access:** Owning `DONOR`, receiving `NGO`, or `ADMIN`
 - **Response:** List of all allocation batches fulfilling the given approved request ID.
 
+---
+
+## 7. Volunteer Assignment, Pickup & Delivery Management Endpoints
+
+### 7.1 Dispatch / Assign Volunteer to Delivery Run
+- **Method:** `POST`
+- **URL:** `/deliveries/assign`
+- **Access:** `DONOR`, `ADMIN` (`Authorization: Bearer <token>`)
+- **Rules:**
+  - Authenticated user must own the donation associated with the allocation.
+  - Selected volunteer must be an active, verified `VOLUNTEER`.
+  - Creates or updates `DeliveryTask` to `ASSIGNED` and records `assignedAt`.
+- **Request Body:**
+```json
+{
+  "allocationId": 87,
+  "volunteerId": 6,
+  "notes": "Verify thermal insulation seals before departing kitchen"
+}
+```
+- **Response:** `HTTP 200 OK` with complete `DeliveryTaskResponseDTO`.
+
+---
+
+### 7.2 Volunteer Accepts Delivery Run
+- **Method:** `POST`
+- **URL:** `/deliveries/{id}/accept`
+- **Access:** Assigned `VOLUNTEER`, `ADMIN`
+- **Rules:** Only the assigned volunteer can accept; status must be `ASSIGNED`.
+- **Response:** `HTTP 200 OK` (Status transitions to `ACCEPTED`, records `acceptedAt`).
+
+---
+
+### 7.3 Volunteer Declines / Rejects Delivery Run
+- **Method:** `POST`
+- **URL:** `/deliveries/{id}/reject`
+- **Access:** Assigned `VOLUNTEER`, `ADMIN`
+- **Request Body (Optional):** `{ "reason": "Schedule conflict" }`
+- **Response:** `HTTP 200 OK` (Status transitions to `REJECTED`, run unassigned for donor reassignment).
+
+---
+
+### 7.4 Confirm Food Pickup at Donor Kitchen (Dual-OTP Handshake Step 1)
+- **Method:** `POST`
+- **URL:** `/deliveries/{id}/pickup`
+- **Access:** Assigned `VOLUNTEER`, `ADMIN`
+- **Rules:** Task must be in `ACCEPTED` state; requires donor's 6-digit `pickupOtp`.
+- **Request Body:**
+```json
+{
+  "otp": "054682",
+  "notes": "30 hot meal boxes packed in insulated containers at 68°C"
+}
+```
+- **Response:** `HTTP 200 OK` (Status transitions to `PICKED_UP`, `AllocationStatus` transitions to `IN_TRANSIT`).
+
+---
+
+### 7.5 Start Transit to NGO
+- **Method:** `POST`
+- **URL:** `/deliveries/{id}/start-transit`
+- **Access:** Assigned `VOLUNTEER`, `ADMIN`
+- **Rules:** Task must be in `PICKED_UP` state.
+- **Response:** `HTTP 200 OK` (Status transitions to `IN_TRANSIT`, records `inTransitAt`).
+
+---
+
+### 7.6 Complete Delivery at NGO Distribution Site (Dual-OTP Handshake Step 2)
+- **Method:** `POST`
+- **URL:** `/deliveries/{id}/complete`
+- **Access:** Assigned `VOLUNTEER`, `ADMIN`
+- **Rules:** Task must be in `IN_TRANSIT` or `PICKED_UP` state; requires recipient NGO's 6-digit `deliveryOtp`.
+- **Request Body:**
+```json
+{
+  "otp": "303694",
+  "recipientName": "Ramesh Chandra (NGO Distribution Head)",
+  "recipientPhone": "9811223344",
+  "notes": "Handover complete at community distribution site"
+}
+```
+- **Response:** `HTTP 200 OK` (Status transitions to `DELIVERED`, `AllocationStatus` marked `DELIVERED`, volunteer total delivery count incremented).
+
+---
+
+### 7.7 Report Delivery Issue
+- **Method:** `POST`
+- **URL:** `/deliveries/{id}/report-issue`
+- **Access:** `VOLUNTEER`, `DONOR`, `NGO`, `ADMIN`
+- **Request Body:** `{ "reason": "Severe vehicle breakdown", "notes": "Stranded on Outer Ring Road" }`
+- **Response:** `HTTP 200 OK` (Status transitions to `FAILED`).
+
+---
+
+### 7.8 Get Delivery Details By ID
+- **Method:** `GET`
+- **URL:** `/deliveries/{id}`
+- **Access:** Assigned `VOLUNTEER`, donor kitchen owner, recipient NGO, or `ADMIN`. Unauthorized access returns `HTTP 403 Forbidden`.
+
+---
+
+### 7.9 Get Authenticated User Deliveries
+- **Method:** `GET`
+- **URL:** `/deliveries/mine`
+- **Access:** `VOLUNTEER` (their runs), `DONOR` (their dispatches), `NGO` (their incoming deliveries), `ADMIN`.
+
+---
+
+### 7.10 List Available Volunteers for Assignment
+- **Method:** `GET`
+- **URL:** `/deliveries/available-volunteers`
+- **Access:** `DONOR`, `ADMIN`
+- **Response:** List of active, verified volunteers with vehicle type and total completed deliveries.
+
+
 
 

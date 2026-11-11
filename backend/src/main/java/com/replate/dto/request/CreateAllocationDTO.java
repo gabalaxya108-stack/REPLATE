@@ -51,3 +51,4 @@ public class CreateAllocationDTO {
         this.notes = notes;
     }
 }
+

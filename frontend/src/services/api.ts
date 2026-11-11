@@ -2,6 +2,16 @@ import { ApiResponse, AuthResponse, LoginRequest, RegisterRequest, UserSummary }
 import { CreateDonationRequest, DonationResponse, PageResponse, UpdateDonationRequest } from '../types/donation';
 import { CreateFoodRequest, FoodRequestResponse, RejectFoodRequest } from '../types/request';
 import { AllocationResponse, CreateAllocationRequest } from '../types/allocation';
+import {
+  DeliveryTaskResponse,
+  VolunteerSummary,
+  AssignVolunteerRequest,
+  PickupDeliveryRequest,
+  StartTransitRequest,
+  CompleteDeliveryRequest,
+  ReportIssueRequest,
+  RejectAssignmentRequest,
+} from '../types/delivery';
 
 const BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api/v1';
 
@@ -236,6 +246,91 @@ class ApiClient {
 
   async getAllocationsByRequest(requestId: number): Promise<AllocationResponse[]> {
     return this.request<AllocationResponse[]>(`/allocations/request/${requestId}`, {
+      method: 'GET',
+    });
+  }
+
+  // Delivery Logistics Endpoints
+  async dispatchDelivery(allocationId: number): Promise<DeliveryTaskResponse> {
+    return this.request<DeliveryTaskResponse>(`/deliveries/allocation/${allocationId}/dispatch`, {
+      method: 'POST',
+    });
+  }
+
+  async assignVolunteer(payload: AssignVolunteerRequest): Promise<DeliveryTaskResponse> {
+    return this.request<DeliveryTaskResponse>('/deliveries/assign', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async acceptDelivery(id: number): Promise<DeliveryTaskResponse> {
+    return this.request<DeliveryTaskResponse>(`/deliveries/${id}/accept`, {
+      method: 'POST',
+    });
+  }
+
+  async rejectDelivery(id: number, payload?: RejectAssignmentRequest): Promise<DeliveryTaskResponse> {
+    return this.request<DeliveryTaskResponse>(`/deliveries/${id}/reject`, {
+      method: 'POST',
+      body: payload ? JSON.stringify(payload) : undefined,
+    });
+  }
+
+  async confirmPickup(id: number, payload?: PickupDeliveryRequest): Promise<DeliveryTaskResponse> {
+    return this.request<DeliveryTaskResponse>(`/deliveries/${id}/pickup`, {
+      method: 'POST',
+      body: payload ? JSON.stringify(payload) : undefined,
+    });
+  }
+
+  async startTransit(id: number, payload?: StartTransitRequest): Promise<DeliveryTaskResponse> {
+    return this.request<DeliveryTaskResponse>(`/deliveries/${id}/start-transit`, {
+      method: 'POST',
+      body: payload ? JSON.stringify(payload) : undefined,
+    });
+  }
+
+  async completeDelivery(id: number, payload?: CompleteDeliveryRequest): Promise<DeliveryTaskResponse> {
+    return this.request<DeliveryTaskResponse>(`/deliveries/${id}/complete`, {
+      method: 'POST',
+      body: payload ? JSON.stringify(payload) : undefined,
+    });
+  }
+
+  async reportDeliveryIssue(id: number, payload: ReportIssueRequest): Promise<DeliveryTaskResponse> {
+    return this.request<DeliveryTaskResponse>(`/deliveries/${id}/report-issue`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getDeliveryById(id: number): Promise<DeliveryTaskResponse> {
+    return this.request<DeliveryTaskResponse>(`/deliveries/${id}`, {
+      method: 'GET',
+    });
+  }
+
+  async getDeliveryByAllocation(allocationId: number): Promise<DeliveryTaskResponse> {
+    return this.request<DeliveryTaskResponse>(`/deliveries/allocation/${allocationId}`, {
+      method: 'GET',
+    });
+  }
+
+  async getMyDeliveries(): Promise<DeliveryTaskResponse[]> {
+    return this.request<DeliveryTaskResponse[]>('/deliveries/mine', {
+      method: 'GET',
+    });
+  }
+
+  async getAvailableDeliveries(): Promise<DeliveryTaskResponse[]> {
+    return this.request<DeliveryTaskResponse[]>('/deliveries/available', {
+      method: 'GET',
+    });
+  }
+
+  async getAvailableVolunteers(): Promise<VolunteerSummary[]> {
+    return this.request<VolunteerSummary[]>('/deliveries/available-volunteers', {
       method: 'GET',
     });
   }

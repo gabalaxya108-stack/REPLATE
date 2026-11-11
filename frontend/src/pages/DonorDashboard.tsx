@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { DonationResponse, CreateDonationRequest, UpdateDonationRequest } from '../types/donation';
 import { FoodRequestResponse } from '../types/request';
 import { AllocationResponse } from '../types/allocation';
+import { DeliveryTaskResponse, VolunteerSummary } from '../types/delivery';
 import { FoodCategory, QuantityUnit, DietaryType, StorageCondition, DonationStatus } from '../types';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -12,12 +13,12 @@ import { Input } from '../components/common/Input';
 import { 
   Plus, Edit3, Send, XCircle, Clock, Utensils, AlertCircle, 
   CheckCircle2, RefreshCw, Eye, MapPin, ChefHat, ShieldCheck,
-  Building2, Check, MessageSquare, PackageCheck
+  Building2, Check, MessageSquare, PackageCheck, Truck, KeyRound, User, Phone
 } from 'lucide-react';
 
 export const DonorDashboard: React.FC = () => {
   const { user } = useAuth();
-  const [activeMainTab, setActiveMainTab] = useState<'DONATIONS' | 'CLAIMS'>('DONATIONS');
+  const [activeMainTab, setActiveMainTab] = useState<'DONATIONS' | 'CLAIMS' | 'DELIVERIES'>('DONATIONS');
 
   const [donations, setDonations] = useState<DonationResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,11 +39,21 @@ export const DonorDashboard: React.FC = () => {
 
   // Allocation Engine State
   const [allocations, setAllocations] = useState<AllocationResponse[]>([]);
+  const [deliveries, setDeliveries] = useState<DeliveryTaskResponse[]>([]);
+  const [volunteers, setVolunteers] = useState<VolunteerSummary[]>([]);
   const [allocatingRequest, setAllocatingRequest] = useState<FoodRequestResponse | null>(null);
   const [allocQuantity, setAllocQuantity] = useState<string>('');
   const [allocNotes, setAllocNotes] = useState<string>('');
   const [isSubmittingAlloc, setIsSubmittingAlloc] = useState<boolean>(false);
   const [allocError, setAllocError] = useState<string | null>(null);
+
+  // Volunteer Assignment Modal State
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [assigningAllocationId, setAssigningAllocationId] = useState<number | null>(null);
+  const [selectedVolunteerId, setSelectedVolunteerId] = useState<number | null>(null);
+  const [assignNotes, setAssignNotes] = useState<string>('');
+  const [isSubmittingAssign, setIsSubmittingAssign] = useState<boolean>(false);
+  const [assignError, setAssignError] = useState<string | null>(null);
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -108,12 +119,49 @@ export const DonorDashboard: React.FC = () => {
 
   const fetchMyAllocations = useCallback(async () => {
     try {
-      const res = await api.getMyAllocations(0, 100);
-      setAllocations(res.content);
+      const [resAlloc, resDeliv, resVols] = await Promise.all([
+        api.getMyAllocations(0, 100),
+        api.getMyDeliveries().catch(() => []),
+        api.getAvailableVolunteers().catch(() => []),
+      ]);
+      setAllocations(resAlloc.content);
+      setDeliveries(resDeliv);
+      setVolunteers(resVols);
     } catch (err: any) {
-      console.error('Failed to load allocations:', err);
+      console.error('Failed to load allocations and logistics:', err);
     }
   }, []);
+
+  const handleOpenAssignModal = (allocationId: number) => {
+    setAssigningAllocationId(allocationId);
+    setSelectedVolunteerId(volunteers.length > 0 ? volunteers[0].userId : null);
+    setAssignNotes('');
+    setAssignError(null);
+    setIsAssignModalOpen(true);
+  };
+
+  const handleConfirmAssignment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!assigningAllocationId || !selectedVolunteerId) return;
+
+    setIsSubmittingAssign(true);
+    setAssignError(null);
+    try {
+      await api.assignVolunteer({
+        allocationId: assigningAllocationId,
+        volunteerId: selectedVolunteerId,
+        notes: assignNotes.trim() || undefined,
+      });
+      setIsAssignModalOpen(false);
+      setSuccessMessage('Volunteer courier assigned! Delivery dispatched to driver.');
+      fetchMyAllocations();
+      setTimeout(() => setSuccessMessage(null), 5000);
+    } catch (err: any) {
+      setAssignError(err instanceof ApiError ? err.message : 'Failed to assign volunteer.');
+    } finally {
+      setIsSubmittingAssign(false);
+    }
+  };
 
   useEffect(() => {
     fetchMyDonations();
@@ -526,6 +574,23 @@ export const DonorDashboard: React.FC = () => {
               {receivedRequests.length}
             </span>
           )}
+        </button>
+
+        <button
+          onClick={() => setActiveMainTab('DELIVERIES')}
+          className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-extrabold transition-all ${
+            activeMainTab === 'DELIVERIES'
+              ? 'bg-forest text-white shadow-xs'
+              : 'text-ink-secondary hover:text-ink-primary hover:bg-warm-muted'
+          }`}
+        >
+          <Truck className="w-4 h-4" />
+          <span>Logistics & Dispatch</span>
+          <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+            activeMainTab === 'DELIVERIES' ? 'bg-white/20 text-white' : 'bg-warm-muted text-ink-primary'
+          }`}>
+            {deliveries.length}
+          </span>
         </button>
       </div>
 
@@ -951,6 +1016,265 @@ export const DonorDashboard: React.FC = () => {
             </div>
           )}
         </>
+      )}
+
+      {/* Main Content Area: Logistics & Courier Dispatch Tab */}
+      {activeMainTab === 'DELIVERIES' && (
+        <>
+          {/* Logistics KPI Counters */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <Card padding="md" className="bg-surface shadow-xs border-border">
+              <span className="text-xs text-ink-secondary font-medium">Total Deliveries</span>
+              <div className="text-2xl font-extrabold text-ink-primary mt-1">{deliveries.length}</div>
+              <span className="text-[11px] text-ink-muted">All dispatched allocations</span>
+            </Card>
+            <Card padding="md" className="bg-surface shadow-xs border-border">
+              <span className="text-xs text-amber-700 font-medium">Pending Driver</span>
+              <div className="text-2xl font-extrabold text-amber-700 mt-1">
+                {deliveries.filter(d => d.status === 'UNASSIGNED' || d.status === 'PENDING_ASSIGNMENT' || d.status === 'REJECTED').length}
+              </div>
+              <span className="text-[11px] text-amber-600/80">Awaiting volunteer assignment</span>
+            </Card>
+            <Card padding="md" className="bg-surface shadow-xs border-border">
+              <span className="text-xs text-blue-700 font-medium">In Transit</span>
+              <div className="text-2xl font-extrabold text-blue-700 mt-1">
+                {deliveries.filter(d => d.status === 'IN_TRANSIT' || d.status === 'PICKED_UP').length}
+              </div>
+              <span className="text-[11px] text-blue-600/80">Courier en route to NGO</span>
+            </Card>
+            <Card padding="md" className="bg-surface shadow-xs border-border">
+              <span className="text-xs text-emerald-700 font-medium">Completed</span>
+              <div className="text-2xl font-extrabold text-emerald-700 mt-1">
+                {deliveries.filter(d => d.status === 'DELIVERED').length}
+              </div>
+              <span className="text-[11px] text-emerald-600/80">Verified delivery handovers</span>
+            </Card>
+          </div>
+
+          {/* Deliveries List */}
+          {deliveries.length === 0 ? (
+            <div className="text-center py-16 bg-surface rounded-2xl border border-border">
+              <Truck className="w-12 h-12 text-ink-muted mx-auto mb-3 opacity-60" />
+              <h3 className="text-base font-bold text-ink-primary">No Delivery Runs Dispatched Yet</h3>
+              <p className="text-xs text-ink-secondary mt-1">
+                When you allocate inventory for approved NGO claims, delivery runs are automatically generated here for volunteer assignment.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {deliveries.map((delivery) => (
+                <Card key={delivery.id} padding="md" className="bg-surface border border-border shadow-card flex flex-col md:flex-row md:items-start justify-between gap-5">
+                  <div className="space-y-3 flex-1">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-xs font-bold text-forest-800 bg-forest/10 px-2.5 py-0.5 rounded-full">
+                        Run #{delivery.id}
+                      </span>
+                      <span className="font-extrabold text-ink-primary text-base">
+                        {delivery.donation?.title || 'Surplus Batch'}
+                      </span>
+                      <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-forest-100 text-forest-800 border border-forest-300">
+                        {delivery.status.replace('_', ' ')}
+                      </span>
+                      <span className="text-xs text-ink-secondary flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-ink-muted" />
+                        Dispatched {new Date(delivery.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="w-full max-w-md">
+                      <div className="flex justify-between text-xs text-ink-secondary mb-1">
+                        <span>Courier Progress</span>
+                        <span className="font-bold text-forest">{delivery.progressPercentage}%</span>
+                      </div>
+                      <div className="w-full bg-warm-muted rounded-full h-2 overflow-hidden">
+                        <div
+                          className="bg-forest h-2 rounded-full transition-all duration-500"
+                          style={{ width: `${delivery.progressPercentage}%` }}
+                        />
+                      </div>
+                      <p className="text-[11px] text-ink-secondary mt-1">
+                        {delivery.statusDescription}
+                      </p>
+                    </div>
+
+                    {/* Route Details Box */}
+                    <div className="p-3.5 bg-warm-muted/70 rounded-xl text-xs space-y-2 border border-border/60">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div>
+                          <span className="text-ink-secondary block text-[11px]">Allocated Quantity:</span>
+                          <span className="text-sm font-extrabold text-forest">
+                            {delivery.allocatedQuantity} {delivery.quantityUnit}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-ink-secondary block text-[11px]">Destination NGO:</span>
+                          <span className="text-xs font-semibold text-ink-primary flex items-center gap-1">
+                            <Building2 className="w-3.5 h-3.5 text-forest" />
+                            {delivery.ngo?.ngoName} ({delivery.ngo?.city})
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Volunteer Information */}
+                      <div className="border-t border-border/60 pt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-ink-secondary text-[11px]">
+                        {delivery.volunteer ? (
+                          <>
+                            <span className="flex items-center gap-1 text-ink-primary font-semibold">
+                              <User className="w-3.5 h-3.5 text-forest" />
+                              Assigned Volunteer: {delivery.volunteer.fullName}
+                            </span>
+                            <span>Vehicle: {delivery.volunteer.vehicleType}</span>
+                            <span className="flex items-center gap-1 font-mono">
+                              <Phone className="w-3 h-3 text-neutral-400" />
+                              {delivery.volunteer.phoneNumber}
+                            </span>
+                            <span>• Total Deliveries: {delivery.volunteer.totalDeliveries}</span>
+                          </>
+                        ) : (
+                          <span className="text-amber-700 font-semibold flex items-center gap-1">
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            Awaiting Volunteer Driver Assignment
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions & Pickup PIN Column */}
+                  <div className="flex md:flex-col items-end justify-center gap-3 shrink-0 border-t md:border-t-0 pt-3 md:pt-0 border-border text-right w-full md:w-64">
+                    {/* Pickup PIN Display for Donor Kitchen Staff */}
+                    {delivery.pickupOtp && delivery.status !== 'DELIVERED' && delivery.status !== 'CANCELLED' && (
+                      <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 text-left w-full">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1 mb-1">
+                          <KeyRound className="w-3.5 h-3.5 text-amber-700" />
+                          Kitchen Pickup PIN
+                        </span>
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-lg font-extrabold tracking-widest text-amber-950 bg-white px-2.5 py-0.5 rounded border border-amber-200">
+                            {delivery.pickupOtp}
+                          </span>
+                          <span className="text-[10px] text-amber-800 max-w-[120px] text-right">
+                            Give to driver upon collection
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {delivery.status === 'DELIVERED' && (
+                      <div className="bg-emerald-50 border border-emerald-300 rounded-xl p-2.5 text-center text-xs font-bold text-emerald-800 flex items-center justify-center gap-1.5 w-full">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        Handed Over to NGO
+                      </div>
+                    )}
+
+                    {/* Assignment Button */}
+                    {(delivery.status === 'UNASSIGNED' || delivery.status === 'PENDING_ASSIGNMENT' || delivery.status === 'REJECTED' || delivery.status === 'ASSIGNED') && (
+                      <Button
+                        variant={delivery.volunteer ? 'outline' : 'primary'}
+                        size="sm"
+                        onClick={() => handleOpenAssignModal(delivery.allocationId)}
+                        className="w-full"
+                        leftIcon={<Truck className="w-4 h-4" />}
+                      >
+                        {delivery.volunteer ? 'Reassign Volunteer' : 'Assign Volunteer'}
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Assign Volunteer Modal */}
+      {isAssignModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-surface border border-border rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border pb-3 mb-4">
+              <div className="flex items-center gap-2">
+                <Truck className="w-5 h-5 text-forest" />
+                <h3 className="font-bold text-ink-primary">Assign Volunteer Courier</h3>
+              </div>
+              <button
+                onClick={() => setIsAssignModalOpen(false)}
+                className="p-1 rounded-lg hover:bg-warm-muted text-ink-secondary"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleConfirmAssignment} className="space-y-4">
+              <p className="text-xs text-ink-secondary">
+                Select an active, verified volunteer in your cluster to fulfill this food redistribution dispatch.
+              </p>
+
+              {assignError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                  <span>{assignError}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold text-ink-secondary uppercase mb-1">
+                  Choose Available Volunteer
+                </label>
+                {volunteers.length === 0 ? (
+                  <p className="text-xs text-ink-muted bg-warm-muted p-3 rounded-lg">
+                    No active volunteers found in the cluster.
+                  </p>
+                ) : (
+                  <select
+                    value={selectedVolunteerId || ''}
+                    onChange={(e) => setSelectedVolunteerId(Number(e.target.value))}
+                    className="w-full text-sm px-3 py-2.5 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-forest focus:outline-none"
+                  >
+                    {volunteers.map((vol) => (
+                      <option key={vol.userId} value={vol.userId}>
+                        {vol.fullName} · {vol.vehicleType} ({vol.totalDeliveries} completed runs)
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-ink-secondary uppercase mb-1">
+                  Kitchen Dispatch Notes (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  value={assignNotes}
+                  onChange={(e) => setAssignNotes(e.target.value)}
+                  placeholder="e.g. Please bring insulated hot carrier bags; report to service kitchen back door."
+                  className="w-full text-xs px-3 py-2 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-forest focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsAssignModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  disabled={isSubmittingAssign || volunteers.length === 0}
+                  leftIcon={<Truck className="w-4 h-4" />}
+                >
+                  {isSubmittingAssign ? 'Assigning...' : 'Confirm Assignment'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
       {/* Create / Edit Donation Modal */}
