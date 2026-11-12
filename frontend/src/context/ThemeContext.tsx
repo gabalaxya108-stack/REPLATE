@@ -15,15 +15,15 @@ export const THEMES: ThemeOption[] = [
   {
     id: 'nature',
     name: 'Emerald Harvest',
-    tagline: 'Warm organic linen with forest green accents',
-    accentColor: '#245C45',
-    bgColor: '#F8F8F3',
+    tagline: 'Fresh organic linen with deep forest emerald accents',
+    accentColor: '#1E513F',
+    bgColor: '#F3F6F2',
     icon: '🌿',
   },
   {
     id: 'dark',
     name: 'Midnight Pantry',
-    tagline: 'Deep dark slate with high-contrast text',
+    tagline: 'Deep dark slate with high-contrast text & luminous emerald',
     accentColor: '#10B981',
     bgColor: '#0B1120',
     icon: '🌙',
@@ -31,9 +31,9 @@ export const THEMES: ThemeOption[] = [
   {
     id: 'sunset',
     name: 'Royal Saffron',
-    tagline: 'Warm amber and rich heritage spice tones',
+    tagline: 'Warm golden amber and rich Indian heritage spice tones',
     accentColor: '#C2410C',
-    bgColor: '#FFFDF7',
+    bgColor: '#FFF7EB',
     icon: '🌅',
   },
   {
@@ -41,7 +41,7 @@ export const THEMES: ThemeOption[] = [
     name: 'Coastal Azure',
     tagline: 'Cool maritime blue and teal social impact',
     accentColor: '#0284C7',
-    bgColor: '#F4F8FA',
+    bgColor: '#EEF6FB',
     icon: '🌊',
   },
 ];
@@ -54,6 +54,37 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+function applyThemeToDOM(activeTheme: AppTheme) {
+  if (typeof document === 'undefined') return;
+
+  const html = document.documentElement;
+  const body = document.body;
+
+  // 1. Data attribute
+  html.setAttribute('data-theme', activeTheme);
+  if (body) {
+    body.setAttribute('data-theme', activeTheme);
+  }
+
+  // 2. Class-based dark mode for Tailwind
+  if (activeTheme === 'dark') {
+    html.classList.add('dark');
+    if (body) body.classList.add('dark');
+  } else {
+    html.classList.remove('dark');
+    if (body) body.classList.remove('dark');
+  }
+
+  // 3. Explicit theme class
+  const allThemes: AppTheme[] = ['nature', 'dark', 'sunset', 'ocean'];
+  allThemes.forEach((t) => {
+    html.classList.remove(`theme-${t}`);
+    if (body) body.classList.remove(`theme-${t}`);
+  });
+  html.classList.add(`theme-${activeTheme}`);
+  if (body) body.classList.add(`theme-${activeTheme}`);
+}
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<AppTheme>(() => {
     try {
@@ -62,7 +93,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return saved;
       }
     } catch {
-      // Fallback to default
+      // Fallback
     }
     return 'nature';
   });
@@ -74,10 +105,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch {
       // Ignore storage errors
     }
+    applyThemeToDOM(newTheme);
   };
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    applyThemeToDOM(theme);
   }, [theme]);
 
   return (
@@ -94,4 +126,3 @@ export const useTheme = (): ThemeContextType => {
   }
   return context;
 };
-

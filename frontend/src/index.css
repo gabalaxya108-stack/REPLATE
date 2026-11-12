@@ -2,51 +2,88 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =========================================================================
+   REPLATE MULTI-THEME DESIGN SYSTEM
+   Supports 4 distinct, high-contrast visual themes:
+   1. nature  — Emerald Harvest (Organic Linen & Forest Green)
+   2. dark    — Midnight Pantry (Deep Slate & Luminous Emerald)
+   3. sunset  — Royal Saffron (Warm Amber & Indian Spice Heritage)
+   4. ocean   — Coastal Azure (Maritime Blue & Pure Impact)
+   Both HEX variables and RGB-channel variables are declared so Tailwind
+   opacity modifiers (e.g. bg-forest/10, bg-surface/90) work 100% reliably.
+   ========================================================================= */
+
 :root,
-[data-theme="nature"] {
-  --color-bg: #F8F8F3;
+html[data-theme="nature"],
+body[data-theme="nature"],
+.theme-nature {
+  --color-bg: #F3F6F2;
+  --color-bg-rgb: 243 246 242;
+
   --color-surface: #FFFFFF;
-  --color-card: #FCFCF9;
-  --color-muted: #F0F1EB;
+  --color-surface-rgb: 255 255 255;
 
-  --color-forest: #245C45;
-  --color-forest-dark: #1C4836;
-  --color-forest-light: #2E7558;
-  --color-forest-subtle: #E9F0EC;
+  --color-card: #FAFDFB;
+  --color-card-rgb: 250 253 251;
 
-  --color-sage: #8BA88B;
-  --color-sage-light: #D3E0D3;
-  --color-sage-dark: #5B7B5B;
+  --color-muted: #E5EDE6;
+  --color-muted-rgb: 229 237 230;
 
-  --color-terracotta: #D98A68;
-  --color-terracotta-light: #F4D4C7;
-  --color-terracotta-dark: #BA6D4D;
+  --color-forest: #1E513F;
+  --color-forest-rgb: 30 81 63;
+  --color-forest-dark: #143A2D;
+  --color-forest-light: #2A6F56;
+  --color-forest-subtle: #E2EDE6;
 
-  --color-ink-primary: #18251F;
-  --color-ink-secondary: #4A5C52;
-  --color-ink-muted: #7E9086;
+  --color-sage: #528265;
+  --color-sage-rgb: 82 130 101;
+  --color-sage-light: #C8DEC9;
+  --color-sage-dark: #375945;
 
-  --color-border: #E3E8E1;
-  --color-border-subtle: #EEF2EC;
-  --color-border-strong: #C8D1C4;
+  --color-terracotta: #C85A32;
+  --color-terracotta-rgb: 200 90 50;
+  --color-terracotta-light: #F7D8CE;
+  --color-terracotta-dark: #983C1A;
+
+  --color-ink-primary: #11221A;
+  --color-ink-secondary: #354D40;
+  --color-ink-muted: #627A6D;
+
+  --color-border: #D2DED5;
+  --color-border-rgb: 210 222 213;
+  --color-border-subtle: #E6EEE8;
+  --color-border-strong: #AEC2B3;
 }
 
-[data-theme="dark"] {
+html[data-theme="dark"],
+body[data-theme="dark"],
+.theme-dark,
+.dark {
   --color-bg: #0B1120;
-  --color-surface: #162032;
-  --color-card: #1A263C;
+  --color-bg-rgb: 11 17 32;
+
+  --color-surface: #151F32;
+  --color-surface-rgb: 21 31 50;
+
+  --color-card: #1B273D;
+  --color-card-rgb: 27 39 61;
+
   --color-muted: #1E293B;
+  --color-muted-rgb: 30 41 59;
 
   --color-forest: #10B981;
+  --color-forest-rgb: 16 185 129;
   --color-forest-dark: #34D399;
   --color-forest-light: #6EE7B7;
   --color-forest-subtle: #064E3B;
 
   --color-sage: #34D399;
+  --color-sage-rgb: 52 211 153;
   --color-sage-light: #6EE7B7;
   --color-sage-dark: #059669;
 
   --color-terracotta: #F59E0B;
+  --color-terracotta-rgb: 245 158 11;
   --color-terracotta-light: #FCD34D;
   --color-terracotta-dark: #D97706;
 
@@ -54,76 +91,109 @@
   --color-ink-secondary: #CBD5E1;
   --color-ink-muted: #94A3B8;
 
-  --color-border: #2A3850;
+  --color-border: #2B3950;
+  --color-border-rgb: 43 57 80;
   --color-border-subtle: #1E293B;
-  --color-border-strong: #3B4B68;
+  --color-border-strong: #3F506C;
 }
 
-[data-theme="sunset"] {
-  --color-bg: #FFFDF7;
+html[data-theme="sunset"],
+body[data-theme="sunset"],
+.theme-sunset {
+  --color-bg: #FFF7EB;
+  --color-bg-rgb: 255 247 235;
+
   --color-surface: #FFFFFF;
-  --color-card: #FFFBEB;
-  --color-muted: #FEF3C7;
+  --color-surface-rgb: 255 255 255;
+
+  --color-card: #FFFDF9;
+  --color-card-rgb: 255 253 249;
+
+  --color-muted: #FDE8CF;
+  --color-muted-rgb: 253 232 207;
 
   --color-forest: #C2410C;
+  --color-forest-rgb: 194 65 12;
   --color-forest-dark: #9A3412;
   --color-forest-light: #EA580C;
   --color-forest-subtle: #FFEDD5;
 
   --color-sage: #D97706;
+  --color-sage-rgb: 217 119 6;
   --color-sage-light: #FDE68A;
   --color-sage-dark: #B45309;
 
   --color-terracotta: #EA580C;
+  --color-terracotta-rgb: 234 88 12;
   --color-terracotta-light: #FED7AA;
   --color-terracotta-dark: #C2410C;
 
-  --color-ink-primary: #261B13;
-  --color-ink-secondary: #5F4330;
-  --color-ink-muted: #8E6E56;
+  --color-ink-primary: #241306;
+  --color-ink-secondary: #5C381E;
+  --color-ink-muted: #8F6546;
 
-  --color-border: #F0E5D8;
-  --color-border-subtle: #FDF6EC;
-  --color-border-strong: #E2CEB9;
+  --color-border: #F6D8B8;
+  --color-border-rgb: 246 216 184;
+  --color-border-subtle: #FDF0E1;
+  --color-border-strong: #E6B584;
 }
 
-[data-theme="ocean"] {
-  --color-bg: #F4F8FA;
+html[data-theme="ocean"],
+body[data-theme="ocean"],
+.theme-ocean {
+  --color-bg: #EEF6FB;
+  --color-bg-rgb: 238 246 251;
+
   --color-surface: #FFFFFF;
-  --color-card: #F0F9FF;
-  --color-muted: #E0F2FE;
+  --color-surface-rgb: 255 255 255;
+
+  --color-card: #F8FCFF;
+  --color-card-rgb: 248 252 255;
+
+  --color-muted: #D9EDF8;
+  --color-muted-rgb: 217 237 248;
 
   --color-forest: #0284C7;
+  --color-forest-rgb: 2 132 199;
   --color-forest-dark: #0369A1;
   --color-forest-light: #38BDF8;
   --color-forest-subtle: #E0F2FE;
 
-  --color-sage: #0284C7;
-  --color-sage-light: #BAE6FD;
-  --color-sage-dark: #0369A1;
+  --color-sage: #0D9488;
+  --color-sage-rgb: 13 148 136;
+  --color-sage-light: #99F6E4;
+  --color-sage-dark: #0F766E;
 
-  --color-terracotta: #0D9488;
-  --color-terracotta-light: #99F6E4;
-  --color-terracotta-dark: #0F766E;
+  --color-terracotta: #0284C7;
+  --color-terracotta-rgb: 2 132 199;
+  --color-terracotta-light: #BAE6FD;
+  --color-terracotta-dark: #0369A1;
 
-  --color-ink-primary: #0F172A;
-  --color-ink-secondary: #334155;
-  --color-ink-muted: #64748B;
+  --color-ink-primary: #0A1C2E;
+  --color-ink-secondary: #2C4A63;
+  --color-ink-muted: #5B7E9C;
 
-  --color-border: #E2E8F0;
-  --color-border-subtle: #F1F5F9;
-  --color-border-strong: #CBD5E1;
+  --color-border: #CFE3F1;
+  --color-border-rgb: 207 227 241;
+  --color-border-subtle: #E5F1F8;
+  --color-border-strong: #A2C7E2;
 }
 
 @layer base {
-  html, body {
+  html {
+    background-color: var(--color-bg);
+    color: var(--color-ink-primary);
+  }
+
+  body {
     background-color: var(--color-bg);
     color: var(--color-ink-primary);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+    min-height: 100vh;
   }
 
-  /* Make sure select, option, and inputs use the surface background and contrast ink color */
+  /* Form controls inherit dynamic theme background and crisp contrast ink */
   select, input, textarea {
     background-color: var(--color-surface);
     color: var(--color-ink-primary);
@@ -135,7 +205,7 @@
   }
 }
 
-/* Custom scrollbars that adapt to the active theme */
+/* Custom scrollbars that adapt smoothly to the active theme */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

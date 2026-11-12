@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: ['class', '[data-theme="dark"]'],
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -8,28 +8,28 @@ export default {
   theme: {
     extend: {
       colors: {
-        surface: 'var(--color-surface)',
+        surface: 'rgb(var(--color-surface-rgb) / <alpha-value>)',
         forest: {
-          DEFAULT: 'var(--color-forest)',
+          DEFAULT: 'rgb(var(--color-forest-rgb) / <alpha-value>)',
           dark: 'var(--color-forest-dark)',
           light: 'var(--color-forest-light)',
           subtle: 'var(--color-forest-subtle)',
         },
         sage: {
-          DEFAULT: 'var(--color-sage)',
+          DEFAULT: 'rgb(var(--color-sage-rgb) / <alpha-value>)',
           light: 'var(--color-sage-light)',
           dark: 'var(--color-sage-dark)',
         },
         terracotta: {
-          DEFAULT: 'var(--color-terracotta)',
+          DEFAULT: 'rgb(var(--color-terracotta-rgb) / <alpha-value>)',
           light: 'var(--color-terracotta-light)',
           dark: 'var(--color-terracotta-dark)',
         },
         warm: {
-          bg: 'var(--color-bg)',
-          surface: 'var(--color-surface)',
-          card: 'var(--color-card)',
-          muted: 'var(--color-muted)',
+          bg: 'rgb(var(--color-bg-rgb) / <alpha-value>)',
+          surface: 'rgb(var(--color-surface-rgb) / <alpha-value>)',
+          card: 'rgb(var(--color-card-rgb) / <alpha-value>)',
+          muted: 'rgb(var(--color-muted-rgb) / <alpha-value>)',
         },
         ink: {
           primary: 'var(--color-ink-primary)',
@@ -37,7 +37,7 @@ export default {
           muted: 'var(--color-ink-muted)',
         },
         border: {
-          DEFAULT: 'var(--color-border)',
+          DEFAULT: 'rgb(var(--color-border-rgb) / <alpha-value>)',
           subtle: 'var(--color-border-subtle)',
           strong: 'var(--color-border-strong)',
         }
