@@ -140,3 +140,4 @@ Have 3 separate browser windows or tabs ready:
 | **4** | NGO (`foodrescue@robinhoodarmy.org`) | Submit Food Demand Claim | `/explore` $\to$ Modal | Contract-Driven Separation of Concerns (`Approvable` interface) |
 | **5** | Donor (`contact@saravanabhavan.in`) | Approve & Allocate Stock | `/donor/dashboard` | ACID Pessimistic Write Locking (`SELECT ... FOR UPDATE`) |
 | **6** | Volunteer (`aarav.sharma@gmail.com`)| Verify Pickup & Dropoff OTPs | `/volunteer/dashboard` | Dual-OTP Chain of Custody & Runtime Polymorphism (`Trackable`) |
+

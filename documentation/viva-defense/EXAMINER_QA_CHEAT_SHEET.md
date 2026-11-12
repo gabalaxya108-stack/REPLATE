@@ -172,3 +172,4 @@
 > 6. `DonorRegistrationPersistenceE2ETest` (1 test): E2E registration to PostgreSQL persistence check.
 > 7. `PasswordEncoderTest` (1 test): BCrypt work factor 12 salt randomness check.
 > 8. `ReplateApplicationTests` (1 test): Spring context bootstrapping check."
+
