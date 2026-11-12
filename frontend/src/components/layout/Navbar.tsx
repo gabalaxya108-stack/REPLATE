@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../common/Button';
+import { ThemeSwitcher } from '../common/ThemeSwitcher';
 import { useAuth } from '../../context/AuthContext';
 import { Menu, X, ArrowUpRight, LogOut, User as UserIcon, PlusCircle, ChefHat, Building2, Truck } from 'lucide-react';
 
@@ -176,10 +177,15 @@ export const Navbar: React.FC = () => {
               </Link>
             </>
           )}
+
+          <div className="pl-1 border-l border-border">
+            <ThemeSwitcher />
+          </div>
         </div>
 
         {/* Mobile menu button */}
-        <div className="lg:hidden flex items-center">
+        <div className="lg:hidden flex items-center gap-2">
+          <ThemeSwitcher compact />
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="p-2 rounded-lg text-ink-primary hover:bg-warm-muted focus:outline-none"

@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: ['class', '[data-theme="dark"]'],
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -7,49 +8,49 @@ export default {
   theme: {
     extend: {
       colors: {
+        surface: 'var(--color-surface)',
         forest: {
-          DEFAULT: '#245C45',
-          dark: '#1C4836',
-          light: '#2E7558',
-          subtle: '#E9F0EC',
+          DEFAULT: 'var(--color-forest)',
+          dark: 'var(--color-forest-dark)',
+          light: 'var(--color-forest-light)',
+          subtle: 'var(--color-forest-subtle)',
         },
         sage: {
-          DEFAULT: '#A8BFA8',
-          light: '#D3E0D3',
-          dark: '#7D9C7D',
+          DEFAULT: 'var(--color-sage)',
+          light: 'var(--color-sage-light)',
+          dark: 'var(--color-sage-dark)',
         },
         terracotta: {
-          DEFAULT: '#D98A68',
-          light: '#F4D4C7',
-          dark: '#BA6D4D',
+          DEFAULT: 'var(--color-terracotta)',
+          light: 'var(--color-terracotta-light)',
+          dark: 'var(--color-terracotta-dark)',
         },
         warm: {
-          bg: '#F8F8F3',
-          surface: '#FFFFFF',
-          card: '#FCFCF9',
-          muted: '#F0F1EB',
+          bg: 'var(--color-bg)',
+          surface: 'var(--color-surface)',
+          card: 'var(--color-card)',
+          muted: 'var(--color-muted)',
         },
         ink: {
-          primary: '#26332D',
-          secondary: '#77847C',
-          muted: '#9DA8A1',
+          primary: 'var(--color-ink-primary)',
+          secondary: 'var(--color-ink-secondary)',
+          muted: 'var(--color-ink-muted)',
         },
         border: {
-          DEFAULT: '#E7EAE4',
-          subtle: '#F0F2EE',
-          strong: '#D3D8CF',
+          DEFAULT: 'var(--color-border)',
+          subtle: 'var(--color-border-subtle)',
+          strong: 'var(--color-border-strong)',
         }
       },
       fontFamily: {
         sans: ['Inter', 'Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
       },
       boxShadow: {
-        'subtle': '0 1px 3px 0 rgba(38, 51, 45, 0.05), 0 1px 2px -1px rgba(38, 51, 45, 0.05)',
-        'card': '0 4px 20px -2px rgba(36, 92, 69, 0.06), 0 2px 6px -1px rgba(36, 92, 69, 0.04)',
-        'elevated': '0 12px 32px -4px rgba(36, 92, 69, 0.08), 0 4px 12px -2px rgba(36, 92, 69, 0.04)',
+        'subtle': '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05)',
+        'card': '0 4px 20px -2px rgba(0, 0, 0, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.04)',
+        'elevated': '0 12px 32px -4px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04)',
       }
     },
   },
   plugins: [],
 }
-

@@ -26,7 +26,7 @@ export const Button: React.FC<ButtonProps> = ({
   const variants = {
     primary: 'bg-forest text-white hover:bg-forest-dark focus:ring-forest shadow-sm active:translate-y-0.5',
     secondary: 'bg-sage text-forest-dark hover:bg-sage-dark hover:text-white focus:ring-sage shadow-sm active:translate-y-0.5',
-    outline: 'border border-border text-ink-primary bg-white hover:bg-warm-muted hover:border-forest focus:ring-forest',
+    outline: 'border border-border text-ink-primary bg-surface hover:bg-warm-muted hover:border-forest focus:ring-forest',
     ghost: 'text-ink-primary hover:bg-warm-muted focus:ring-forest',
     terracotta: 'bg-terracotta text-white hover:bg-terracotta-dark focus:ring-terracotta shadow-sm active:translate-y-0.5',
   };
