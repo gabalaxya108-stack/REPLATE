@@ -81,6 +81,10 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // Static assets & SPA routes
+                        .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico", "/*.png", "/*.svg", "/vite.svg").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/explore", "/login", "/register", "/deliveries", "/donor/**", "/ngo/**", "/volunteer/**").permitAll()
+
                         // Public endpoints
                         .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/auth/me").authenticated()
