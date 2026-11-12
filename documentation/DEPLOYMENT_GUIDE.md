@@ -136,3 +136,4 @@ After deploying, verify the live system:
 - [ ] **Authentication:** Log in as Donor (`contact@saravanabhavan.in` / `Password@123`) and verify that dashboard cards load without CORS errors.
 - [ ] **NGO Claims:** Log in as NGO (`foodrescue@robinhoodarmy.org` / `Password@123`) and submit a test claim.
 - [ ] **Volunteer Logistics:** Log in as Volunteer (`aarav.sharma@gmail.com` / `Password@123`) and test the OTP verification modal.
+
