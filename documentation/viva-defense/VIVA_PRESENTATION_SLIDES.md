@@ -277,3 +277,4 @@ public AllocationResponse createAllocation(Long donorUserId, CreateAllocationReq
 
 > **Speaker Notes:**  
 > "In conclusion, REPLATE demonstrates that Object-Oriented Programming in Java 21 is not just an academic curriculum subject, but an indispensable engineering methodology for building reliable, concurrent, and socially impactful software. Thank you, and I am now ready for your questions."
+
