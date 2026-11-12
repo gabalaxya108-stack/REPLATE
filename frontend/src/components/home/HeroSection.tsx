@@ -105,7 +105,7 @@ export const HeroSection: React.FC = () => {
                     </div>
                     <div>
                       <span className="text-ink-secondary block text-[11px]">Thermal Status</span>
-                      <span className="font-semibold text-forest dark:text-emerald-300">Hot Insulated (65°C)</span>
+                      <span className="font-semibold text-emerald-700">Hot Insulated (65°C)</span>
                     </div>
                   </div>
                 </div>

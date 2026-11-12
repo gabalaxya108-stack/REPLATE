@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../common/Button';
-import { ThemeSwitcher } from '../common/ThemeSwitcher';
 import { useAuth } from '../../context/AuthContext';
 import { Menu, X, ArrowUpRight, LogOut, User as UserIcon, PlusCircle, ChefHat, Building2, Truck } from 'lucide-react';
 
@@ -47,15 +46,21 @@ export const Navbar: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-warm-bg/95 backdrop-blur-md border-b border-border transition-all">
-      {/* Top Banner: Academic & FSSAI Trust Anchor + Horizontal Theme Bar */}
+      {/* Top Banner: Academic & FSSAI Trust Anchor */}
       <div className="bg-forest-subtle py-1.5 px-4 text-xs text-forest-dark border-b border-border/60">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            <span className="font-medium truncate">Surplus Food Recovery Platform • Aligned with FSSAI & NITI Aayog Darpan</span>
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+            <span className="font-medium">Surplus Food Recovery Platform • Aligned with FSSAI & NITI Aayog Darpan Guidelines</span>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <ThemeSwitcher showLabel={false} />
+          <div className="hidden md:flex items-center gap-4 text-ink-secondary text-[11px]">
+            <span>Bengaluru</span>
+            <span>•</span>
+            <span>Delhi NCR</span>
+            <span>•</span>
+            <span>Mumbai</span>
+            <span>•</span>
+            <span>Hyderabad</span>
           </div>
         </div>
       </div>
@@ -174,7 +179,7 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* Mobile menu button */}
-        <div className="lg:hidden flex items-center gap-2">
+        <div className="lg:hidden flex items-center">
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="p-2 rounded-lg text-ink-primary hover:bg-warm-muted focus:outline-none"
@@ -199,11 +204,6 @@ export const Navbar: React.FC = () => {
                 {link.label}
               </Link>
             ))}
-          </div>
-
-          <div className="pt-3 border-t border-border space-y-2">
-            <span className="text-[11px] font-bold text-ink-muted uppercase tracking-wider block">Theme Palette:</span>
-            <ThemeSwitcher className="w-full justify-center" />
           </div>
           <div className="pt-3 border-t border-border flex flex-col gap-2">
             {isAuthenticated && user ? (

@@ -18,13 +18,13 @@ export const Badge: React.FC<BadgeProps> = ({
   const base = 'inline-flex items-center font-medium rounded-full';
 
   const variants = {
-    veg: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 font-semibold',
-    'non-veg': 'bg-rose-500/15 text-rose-800 dark:text-rose-300 border border-rose-500/30 font-semibold',
-    category: 'bg-forest/10 text-forest-dark border border-forest/20 font-semibold',
-    available: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 font-semibold',
-    allocated: 'bg-amber-500/15 text-amber-900 dark:text-amber-300 border border-amber-500/30 font-semibold',
-    warning: 'bg-orange-500/15 text-orange-900 dark:text-orange-300 border border-orange-500/30 font-semibold',
-    neutral: 'bg-warm-muted text-ink-secondary border border-border font-medium',
+    veg: 'bg-emerald-50 text-emerald-800 border border-emerald-200',
+    'non-veg': 'bg-rose-50 text-rose-800 border border-rose-200',
+    category: 'bg-forest-subtle text-forest-dark border border-forest/10',
+    available: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    allocated: 'bg-amber-50 text-amber-800 border border-amber-200',
+    warning: 'bg-orange-50 text-orange-800 border border-orange-200',
+    neutral: 'bg-warm-muted text-ink-secondary border border-border',
   };
 
   const sizes = {

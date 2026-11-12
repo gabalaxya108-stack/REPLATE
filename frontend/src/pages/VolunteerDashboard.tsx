@@ -193,7 +193,7 @@ export const VolunteerDashboard: React.FC = () => {
       case 'DELIVERED':
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">Delivered</span>;
       case 'REJECTED':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 text-neutral-600 border border-border">Declined</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 text-neutral-600 border border-neutral-300">Declined</span>;
       case 'FAILED':
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-300">Issue Reported</span>;
       default:
@@ -204,7 +204,7 @@ export const VolunteerDashboard: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header Profile / Stats */}
-      <div className="bg-surface rounded-2xl shadow-sm border border-border p-6 sm:p-8 mb-8">
+      <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 sm:p-8 mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
@@ -222,7 +222,7 @@ export const VolunteerDashboard: React.FC = () => {
           <button
             onClick={loadDeliveries}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-medium text-ink-primary hover:bg-warm-muted transition"
+            className="inline-flex items-center gap-2 px-4 py-2 border border-neutral-300 rounded-xl text-sm font-medium text-ink-primary hover:bg-neutral-50 transition"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh Runs
@@ -230,26 +230,26 @@ export const VolunteerDashboard: React.FC = () => {
         </div>
 
         {/* Metric Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-border-subtle">
-          <div className="bg-warm-bg rounded-xl p-4 border border-border/60">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-neutral-100">
+          <div className="bg-warm-bg rounded-xl p-4 border border-neutral-200/60">
             <span className="text-xs font-medium text-ink-secondary block">Active Deliveries</span>
-            <span className="text-2xl font-extrabold text-forest">{activeRuns.length}</span>
+            <span className="text-2xl font-bold text-forest-700">{activeRuns.length}</span>
           </div>
-          <div className="bg-warm-bg rounded-xl p-4 border border-border/60">
+          <div className="bg-warm-bg rounded-xl p-4 border border-neutral-200/60">
             <span className="text-xs font-medium text-ink-secondary block">In Transit</span>
-            <span className="text-2xl font-extrabold text-terracotta">
+            <span className="text-2xl font-bold text-terracotta-700">
               {tasks.filter((t) => t.status === 'IN_TRANSIT').length}
             </span>
           </div>
-          <div className="bg-warm-bg rounded-xl p-4 border border-border/60">
+          <div className="bg-warm-bg rounded-xl p-4 border border-neutral-200/60">
             <span className="text-xs font-medium text-ink-secondary block">Completed Deliveries</span>
-            <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-300">
+            <span className="text-2xl font-bold text-emerald-700">
               {tasks.filter((t) => t.status === 'DELIVERED').length}
             </span>
           </div>
-          <div className="bg-warm-bg rounded-xl p-4 border border-border/60">
+          <div className="bg-warm-bg rounded-xl p-4 border border-neutral-200/60">
             <span className="text-xs font-medium text-ink-secondary block">Cluster Open Runs</span>
-            <span className="text-2xl font-extrabold text-blue-600 dark:text-blue-300">{availableTasks.length}</span>
+            <span className="text-2xl font-bold text-blue-700">{availableTasks.length}</span>
           </div>
         </div>
       </div>
@@ -270,7 +270,7 @@ export const VolunteerDashboard: React.FC = () => {
       )}
 
       {/* Tabs */}
-      <div className="flex border-b border-border mb-6">
+      <div className="flex border-b border-neutral-200 mb-6">
         <button
           onClick={() => setActiveTab('active')}
           className={`py-3 px-5 text-sm font-semibold border-b-2 flex items-center gap-2 transition ${
@@ -314,7 +314,7 @@ export const VolunteerDashboard: React.FC = () => {
         </div>
       ) : activeTab === 'active' ? (
         activeRuns.length === 0 ? (
-          <div className="bg-surface rounded-2xl border border-border p-12 text-center">
+          <div className="bg-white rounded-2xl border border-neutral-200 p-12 text-center">
             <Truck className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
             <h3 className="text-lg font-bold text-ink-primary">No active delivery assignments</h3>
             <p className="text-sm text-ink-secondary mt-1">
@@ -326,10 +326,10 @@ export const VolunteerDashboard: React.FC = () => {
             {activeRuns.map((task) => (
               <div
                 key={task.id}
-                className="bg-surface rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-md transition"
+                className="bg-white rounded-2xl border border-neutral-200 overflow-hidden shadow-sm hover:shadow-md transition"
               >
                 {/* Card Top */}
-                <div className="p-6 border-b border-border-subtle flex flex-col md:flex-row md:items-center justify-between gap-4 bg-warm-bg/30">
+                <div className="p-6 border-b border-neutral-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-warm-bg/30">
                   <div>
                     <div className="flex items-center gap-3">
                       <span className="text-xs font-bold text-forest-800 bg-forest-100 px-2.5 py-0.5 rounded-full">
@@ -371,7 +371,7 @@ export const VolunteerDashboard: React.FC = () => {
                 {/* Card Body - Route Info */}
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Origin: Donor Kitchen */}
-                  <div className="bg-warm-bg rounded-xl p-4 border border-border/80">
+                  <div className="bg-warm-bg rounded-xl p-4 border border-neutral-200/80">
                     <div className="flex items-center gap-2 text-xs font-bold text-forest-800 uppercase tracking-wider mb-2">
                       <Building className="w-4 h-4 text-forest-600" />
                       1. Pickup Location (Donor Kitchen)
@@ -383,7 +383,7 @@ export const VolunteerDashboard: React.FC = () => {
                         {task.donor?.addressLine1}, {task.donor?.city}, {task.donor?.state} - {task.donor?.pincode}
                       </span>
                     </p>
-                    <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border/50 text-xs text-ink-secondary">
+                    <div className="flex items-center gap-4 mt-3 pt-3 border-t border-neutral-200/50 text-xs text-ink-secondary">
                       <span className="flex items-center gap-1">
                         <User className="w-3.5 h-3.5 text-neutral-400" />
                         {task.donor?.contactPerson}
@@ -401,7 +401,7 @@ export const VolunteerDashboard: React.FC = () => {
                   </div>
 
                   {/* Destination: NGO Center */}
-                  <div className="bg-warm-bg rounded-xl p-4 border border-border/80">
+                  <div className="bg-warm-bg rounded-xl p-4 border border-neutral-200/80">
                     <div className="flex items-center gap-2 text-xs font-bold text-terracotta-800 uppercase tracking-wider mb-2">
                       <MapPin className="w-4 h-4 text-terracotta-600" />
                       2. Destination Site (Beneficiary NGO)
@@ -413,7 +413,7 @@ export const VolunteerDashboard: React.FC = () => {
                         {task.ngo?.addressLine1}, {task.ngo?.city}, {task.ngo?.state} - {task.ngo?.pincode}
                       </span>
                     </p>
-                    <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border/50 text-xs text-ink-secondary">
+                    <div className="flex items-center gap-4 mt-3 pt-3 border-t border-neutral-200/50 text-xs text-ink-secondary">
                       <span className="flex items-center gap-1">
                         <User className="w-3.5 h-3.5 text-neutral-400" />
                         {task.ngo?.contactPerson}
@@ -427,7 +427,7 @@ export const VolunteerDashboard: React.FC = () => {
                 </div>
 
                 {/* Card Actions Footer */}
-                <div className="px-6 py-4 bg-warm-muted border-t border-border-subtle flex flex-wrap items-center justify-between gap-3">
+                <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-100 flex flex-wrap items-center justify-between gap-3">
                   <div className="text-xs text-ink-secondary">
                     {task.pickedUpAt && (
                       <span className="mr-3">
@@ -450,7 +450,7 @@ export const VolunteerDashboard: React.FC = () => {
                             setModalType('reject');
                           }}
                           disabled={actionLoading}
-                          className="px-4 py-2 border border-border rounded-xl text-sm font-semibold text-ink-secondary hover:bg-warm-muted transition"
+                          className="px-4 py-2 border border-neutral-300 rounded-xl text-sm font-semibold text-ink-secondary hover:bg-neutral-100 transition"
                         >
                           Decline
                         </button>
@@ -523,7 +523,7 @@ export const VolunteerDashboard: React.FC = () => {
         )
       ) : activeTab === 'available' ? (
         availableTasks.length === 0 ? (
-          <div className="bg-surface rounded-2xl border border-border p-12 text-center">
+          <div className="bg-white rounded-2xl border border-neutral-200 p-12 text-center">
             <Package className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
             <h3 className="text-lg font-bold text-ink-primary">No open delivery runs available right now</h3>
             <p className="text-sm text-ink-secondary mt-1">
@@ -535,7 +535,7 @@ export const VolunteerDashboard: React.FC = () => {
             {availableTasks.map((task) => (
               <div
                 key={task.id}
-                className="bg-surface rounded-2xl border border-border p-6 shadow-sm hover:shadow-md transition flex flex-col justify-between"
+                className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm hover:shadow-md transition flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between">
@@ -560,7 +560,7 @@ export const VolunteerDashboard: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <div className="mt-6 pt-4 border-t border-border-subtle flex items-center justify-between">
+                <div className="mt-6 pt-4 border-t border-neutral-100 flex items-center justify-between">
                   <span className="text-[11px] text-ink-secondary">
                     Created: {new Date(task.createdAt).toLocaleDateString()}
                   </span>
@@ -575,7 +575,7 @@ export const VolunteerDashboard: React.FC = () => {
       ) : (
         /* History Runs */
         historyRuns.length === 0 ? (
-          <div className="bg-surface rounded-2xl border border-border p-12 text-center">
+          <div className="bg-white rounded-2xl border border-neutral-200 p-12 text-center">
             <Clock className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
             <h3 className="text-lg font-bold text-ink-primary">No completed delivery history yet</h3>
             <p className="text-sm text-ink-secondary mt-1">
@@ -587,7 +587,7 @@ export const VolunteerDashboard: React.FC = () => {
             {historyRuns.map((task) => (
               <div
                 key={task.id}
-                className="bg-surface rounded-xl border border-border p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                className="bg-white rounded-xl border border-neutral-200 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
               >
                 <div>
                   <div className="flex items-center gap-2">
@@ -612,7 +612,7 @@ export const VolunteerDashboard: React.FC = () => {
                     </p>
                   )}
                 </div>
-                <div className="text-right text-xs text-ink-secondary sm:border-l sm:border-border-subtle sm:pl-4">
+                <div className="text-right text-xs text-ink-secondary sm:border-l sm:border-neutral-100 sm:pl-4">
                   {task.deliveredAt ? (
                     <div>
                       <span className="text-emerald-700 font-semibold block">Delivered</span>
@@ -635,8 +635,8 @@ export const VolunteerDashboard: React.FC = () => {
       {/* Pickup Modal */}
       {modalType === 'pickup' && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="bg-surface rounded-2xl max-w-md w-full p-6 shadow-2xl border border-border animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-neutral-200 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
               <div className="flex items-center gap-2">
                 <KeyRound className="w-5 h-5 text-forest-700" />
                 <h3 className="font-bold text-ink-primary">Confirm Food Pickup</h3>
@@ -662,7 +662,7 @@ export const VolunteerDashboard: React.FC = () => {
                   value={otpInput}
                   onChange={(e) => setOtpInput(e.target.value)}
                   placeholder="e.g. 492810"
-                  className="w-full text-center text-xl font-mono tracking-widest px-4 py-2.5 border border-border rounded-xl focus:ring-2 focus:ring-forest-500 focus:outline-none"
+                  className="w-full text-center text-xl font-mono tracking-widest px-4 py-2.5 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-forest-500 focus:outline-none"
                 />
               </div>
 
@@ -675,15 +675,15 @@ export const VolunteerDashboard: React.FC = () => {
                   value={notesInput}
                   onChange={(e) => setNotesInput(e.target.value)}
                   placeholder="e.g. Insulated bags verified, temperature 65°C, 30 boxes intact"
-                  className="w-full text-sm px-3 py-2 border border-border rounded-xl focus:ring-2 focus:ring-forest-500 focus:outline-none"
+                  className="w-full text-sm px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-forest-500 focus:outline-none"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border-subtle">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100">
               <button
                 onClick={closeModal}
-                className="px-4 py-2 text-sm font-semibold text-ink-secondary hover:bg-warm-muted rounded-xl transition"
+                className="px-4 py-2 text-sm font-semibold text-ink-secondary hover:bg-neutral-100 rounded-xl transition"
               >
                 Cancel
               </button>
@@ -703,8 +703,8 @@ export const VolunteerDashboard: React.FC = () => {
       {/* Deliver Modal */}
       {modalType === 'deliver' && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="bg-surface rounded-2xl max-w-md w-full p-6 shadow-2xl border border-border animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-neutral-200 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-emerald-700" />
                 <h3 className="font-bold text-ink-primary">Confirm Final Delivery</h3>
@@ -729,7 +729,7 @@ export const VolunteerDashboard: React.FC = () => {
                   value={otpInput}
                   onChange={(e) => setOtpInput(e.target.value)}
                   placeholder="e.g. 710345"
-                  className="w-full text-center text-xl font-mono tracking-widest px-4 py-2.5 border border-border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full text-center text-xl font-mono tracking-widest px-4 py-2.5 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
               </div>
 
@@ -742,7 +742,7 @@ export const VolunteerDashboard: React.FC = () => {
                   value={recipientName}
                   onChange={(e) => setRecipientName(e.target.value)}
                   placeholder="e.g. Ramesh Chandra (Distribution Manager)"
-                  className="w-full text-sm px-3 py-2 border border-border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full text-sm px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
               </div>
 
@@ -755,7 +755,7 @@ export const VolunteerDashboard: React.FC = () => {
                   value={recipientPhone}
                   onChange={(e) => setRecipientPhone(e.target.value)}
                   placeholder="e.g. 9811223344"
-                  className="w-full text-sm px-3 py-2 border border-border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full text-sm px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
               </div>
 
@@ -768,15 +768,15 @@ export const VolunteerDashboard: React.FC = () => {
                   value={notesInput}
                   onChange={(e) => setNotesInput(e.target.value)}
                   placeholder="e.g. Delivered into community shelter storage, signed by staff"
-                  className="w-full text-sm px-3 py-2 border border-border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full text-sm px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border-subtle">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100">
               <button
                 onClick={closeModal}
-                className="px-4 py-2 text-sm font-semibold text-ink-secondary hover:bg-warm-muted rounded-xl transition"
+                className="px-4 py-2 text-sm font-semibold text-ink-secondary hover:bg-neutral-100 rounded-xl transition"
               >
                 Cancel
               </button>
@@ -796,8 +796,8 @@ export const VolunteerDashboard: React.FC = () => {
       {/* Decline Modal */}
       {modalType === 'reject' && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="bg-surface rounded-2xl max-w-md w-full p-6 shadow-2xl border border-border animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-neutral-200 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-amber-600" />
                 <h3 className="font-bold text-ink-primary">Decline Delivery Assignment</h3>
@@ -820,15 +820,15 @@ export const VolunteerDashboard: React.FC = () => {
                   value={reasonInput}
                   onChange={(e) => setReasonInput(e.target.value)}
                   placeholder="e.g. Schedule conflict, distance too far, vehicle maintenance"
-                  className="w-full text-sm px-3 py-2 border border-border rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full text-sm px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border-subtle">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100">
               <button
                 onClick={closeModal}
-                className="px-4 py-2 text-sm font-semibold text-ink-secondary hover:bg-warm-muted rounded-xl transition"
+                className="px-4 py-2 text-sm font-semibold text-ink-secondary hover:bg-neutral-100 rounded-xl transition"
               >
                 Cancel
               </button>
@@ -848,8 +848,8 @@ export const VolunteerDashboard: React.FC = () => {
       {/* Report Issue Modal */}
       {modalType === 'issue' && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="bg-surface rounded-2xl max-w-md w-full p-6 shadow-2xl border border-border animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-neutral-200 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-rose-600" />
                 <h3 className="font-bold text-ink-primary">Report Delivery Issue</h3>
@@ -872,7 +872,7 @@ export const VolunteerDashboard: React.FC = () => {
                   value={reasonInput}
                   onChange={(e) => setReasonInput(e.target.value)}
                   placeholder="e.g. Severe vehicle puncture, NGO premises closed"
-                  className="w-full text-sm px-3 py-2 border border-border rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-none"
+                  className="w-full text-sm px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-none"
                 />
               </div>
               <div>
@@ -884,15 +884,15 @@ export const VolunteerDashboard: React.FC = () => {
                   value={notesInput}
                   onChange={(e) => setNotesInput(e.target.value)}
                   placeholder="Provide any location details or next steps..."
-                  className="w-full text-sm px-3 py-2 border border-border rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-none"
+                  className="w-full text-sm px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-none"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border-subtle">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100">
               <button
                 onClick={closeModal}
-                className="px-4 py-2 text-sm font-semibold text-ink-secondary hover:bg-warm-muted rounded-xl transition"
+                className="px-4 py-2 text-sm font-semibold text-ink-secondary hover:bg-neutral-100 rounded-xl transition"
               >
                 Cancel
               </button>
