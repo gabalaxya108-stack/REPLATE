@@ -233,23 +233,23 @@ export const VolunteerDashboard: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-border-subtle">
           <div className="bg-warm-bg rounded-xl p-4 border border-border/60">
             <span className="text-xs font-medium text-ink-secondary block">Active Deliveries</span>
-            <span className="text-2xl font-bold text-forest-700">{activeRuns.length}</span>
+            <span className="text-2xl font-extrabold text-forest">{activeRuns.length}</span>
           </div>
           <div className="bg-warm-bg rounded-xl p-4 border border-border/60">
             <span className="text-xs font-medium text-ink-secondary block">In Transit</span>
-            <span className="text-2xl font-bold text-terracotta-700">
+            <span className="text-2xl font-extrabold text-terracotta">
               {tasks.filter((t) => t.status === 'IN_TRANSIT').length}
             </span>
           </div>
           <div className="bg-warm-bg rounded-xl p-4 border border-border/60">
             <span className="text-xs font-medium text-ink-secondary block">Completed Deliveries</span>
-            <span className="text-2xl font-bold text-emerald-700">
+            <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-300">
               {tasks.filter((t) => t.status === 'DELIVERED').length}
             </span>
           </div>
           <div className="bg-warm-bg rounded-xl p-4 border border-border/60">
             <span className="text-xs font-medium text-ink-secondary block">Cluster Open Runs</span>
-            <span className="text-2xl font-bold text-blue-700">{availableTasks.length}</span>
+            <span className="text-2xl font-extrabold text-blue-600 dark:text-blue-300">{availableTasks.length}</span>
           </div>
         </div>
       </div>

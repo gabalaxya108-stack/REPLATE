@@ -24,7 +24,7 @@ export const ProblemStatement: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-16">
           {/* Card 1 */}
           <Card padding="md" hoverEffect className="space-y-3 bg-warm-card">
-            <div className="w-10 h-10 rounded-lg bg-red-100 text-red-700 flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-lg bg-red-500/15 text-red-700 dark:text-red-300 flex items-center justify-center font-bold">
               <Clock className="w-5 h-5" />
             </div>
             <h3 className="font-bold text-ink-primary text-base">Perishable Time Window</h3>
@@ -35,7 +35,7 @@ export const ProblemStatement: React.FC = () => {
 
           {/* Card 2 */}
           <Card padding="md" hoverEffect className="space-y-3 bg-warm-card">
-            <div className="w-10 h-10 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-lg bg-amber-500/15 text-amber-800 dark:text-amber-300 flex items-center justify-center font-bold">
               <Truck className="w-5 h-5" />
             </div>
             <h3 className="font-bold text-ink-primary text-base">The Last-Mile Transport Gap</h3>
@@ -46,7 +46,7 @@ export const ProblemStatement: React.FC = () => {
 
           {/* Card 3 */}
           <Card padding="md" hoverEffect className="space-y-3 bg-warm-card">
-            <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-lg bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold">
               <ShieldAlert className="w-5 h-5" />
             </div>
             <h3 className="font-bold text-ink-primary text-base">FSSAI Safety Liabilities</h3>
@@ -57,7 +57,7 @@ export const ProblemStatement: React.FC = () => {
 
           {/* Card 4 */}
           <Card padding="md" hoverEffect className="space-y-3 bg-warm-card">
-            <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-lg bg-blue-500/15 text-blue-800 dark:text-blue-300 flex items-center justify-center font-bold">
               <TrendingDown className="w-5 h-5" />
             </div>
             <h3 className="font-bold text-ink-primary text-base">Methane Emissions in Landfills</h3>
