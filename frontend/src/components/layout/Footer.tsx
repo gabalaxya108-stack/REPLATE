@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ThemeSwitcher } from '../common/ThemeSwitcher';
 
 export const Footer: React.FC = () => {
   return (
@@ -60,7 +61,18 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="pt-12 mt-12 border-t border-border flex flex-col sm:flex-row items-center justify-between text-xs text-ink-secondary gap-4">
+        {/* Horizontal Theme Switcher Palette Bar in Footer */}
+        <div className="pt-8 mt-12 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-bold text-ink-primary">Theme Palette:</span>
+            <ThemeSwitcher variant="footer" showLabel={false} />
+          </div>
+          <div className="text-xs text-ink-muted">
+            Instant live preview across all routes & dashboards
+          </div>
+        </div>
+
+        <div className="pt-6 mt-6 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between text-xs text-ink-secondary gap-4">
           <p>© 2026 REPLATE — Food Waste Donation & Redistribution System. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <span>Built with care in Bengaluru, India</span>

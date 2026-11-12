@@ -4,55 +4,53 @@
 
 /* =========================================================================
    REPLATE MULTI-THEME DESIGN SYSTEM
-   Supports 4 distinct, high-contrast visual themes:
-   1. nature  — Emerald Harvest (Organic Linen & Forest Green)
-   2. dark    — Midnight Pantry (Deep Slate & Luminous Emerald)
-   3. sunset  — Royal Saffron (Warm Amber & Indian Spice Heritage)
-   4. ocean   — Coastal Azure (Maritime Blue & Pure Impact)
-   Both HEX variables and RGB-channel variables are declared so Tailwind
-   opacity modifiers (e.g. bg-forest/10, bg-surface/90) work 100% reliably.
+   Supports 4 distinct, high-contrast, fully transformative themes:
+   1. nature  — Emerald Harvest (Fresh organic sage linen & deep forest emerald)
+   2. dark    — Midnight Pantry (Deep midnight slate & luminous emerald)
+   3. sunset  — Royal Saffron (Rich warm golden saffron amber & terracotta)
+   4. ocean   — Coastal Azure (Clear maritime ocean blue & teal impact)
    ========================================================================= */
 
 :root,
 html[data-theme="nature"],
 body[data-theme="nature"],
 .theme-nature {
-  --color-bg: #F3F6F2;
-  --color-bg-rgb: 243 246 242;
+  --color-bg: #EDF3EE;
+  --color-bg-rgb: 237 243 238;
 
-  --color-surface: #FFFFFF;
-  --color-surface-rgb: 255 255 255;
+  --color-surface: #F7FAF8;
+  --color-surface-rgb: 247 250 248;
 
-  --color-card: #FAFDFB;
-  --color-card-rgb: 250 253 251;
+  --color-card: #FFFFFF;
+  --color-card-rgb: 255 255 255;
 
-  --color-muted: #E5EDE6;
-  --color-muted-rgb: 229 237 230;
+  --color-muted: #DCE8DF;
+  --color-muted-rgb: 220 232 223;
 
-  --color-forest: #1E513F;
-  --color-forest-rgb: 30 81 63;
-  --color-forest-dark: #143A2D;
-  --color-forest-light: #2A6F56;
-  --color-forest-subtle: #E2EDE6;
+  --color-forest: #164E3D;
+  --color-forest-rgb: 22 78 61;
+  --color-forest-dark: #0F372B;
+  --color-forest-light: #206E56;
+  --color-forest-subtle: #DDEBE2;
 
-  --color-sage: #528265;
-  --color-sage-rgb: 82 130 101;
-  --color-sage-light: #C8DEC9;
-  --color-sage-dark: #375945;
+  --color-sage: #4E7C62;
+  --color-sage-rgb: 78 124 98;
+  --color-sage-light: #C2D9CB;
+  --color-sage-dark: #355643;
 
   --color-terracotta: #C85A32;
   --color-terracotta-rgb: 200 90 50;
   --color-terracotta-light: #F7D8CE;
   --color-terracotta-dark: #983C1A;
 
-  --color-ink-primary: #11221A;
-  --color-ink-secondary: #354D40;
-  --color-ink-muted: #627A6D;
+  --color-ink-primary: #0D2017;
+  --color-ink-secondary: #2C483A;
+  --color-ink-muted: #577364;
 
-  --color-border: #D2DED5;
-  --color-border-rgb: 210 222 213;
-  --color-border-subtle: #E6EEE8;
-  --color-border-strong: #AEC2B3;
+  --color-border: #BED0C3;
+  --color-border-rgb: 190 208 195;
+  --color-border-subtle: #D8E5DC;
+  --color-border-strong: #9CB7A3;
 }
 
 html[data-theme="dark"],
@@ -62,14 +60,14 @@ body[data-theme="dark"],
   --color-bg: #0B1120;
   --color-bg-rgb: 11 17 32;
 
-  --color-surface: #151F32;
-  --color-surface-rgb: 21 31 50;
+  --color-surface: #131D31;
+  --color-surface-rgb: 19 29 49;
 
-  --color-card: #1B273D;
-  --color-card-rgb: 27 39 61;
+  --color-card: #1A263E;
+  --color-card-rgb: 26 38 62;
 
-  --color-muted: #1E293B;
-  --color-muted-rgb: 30 41 59;
+  --color-muted: #22314E;
+  --color-muted-rgb: 34 49 78;
 
   --color-forest: #10B981;
   --color-forest-rgb: 16 185 129;
@@ -91,32 +89,32 @@ body[data-theme="dark"],
   --color-ink-secondary: #CBD5E1;
   --color-ink-muted: #94A3B8;
 
-  --color-border: #2B3950;
-  --color-border-rgb: 43 57 80;
+  --color-border: #283854;
+  --color-border-rgb: 40 56 84;
   --color-border-subtle: #1E293B;
-  --color-border-strong: #3F506C;
+  --color-border-strong: #3F557C;
 }
 
 html[data-theme="sunset"],
 body[data-theme="sunset"],
 .theme-sunset {
-  --color-bg: #FFF7EB;
-  --color-bg-rgb: 255 247 235;
+  --color-bg: #FFF1DC;
+  --color-bg-rgb: 255 241 220;
 
-  --color-surface: #FFFFFF;
-  --color-surface-rgb: 255 255 255;
+  --color-surface: #FFF9F0;
+  --color-surface-rgb: 255 249 240;
 
-  --color-card: #FFFDF9;
-  --color-card-rgb: 255 253 249;
+  --color-card: #FFFFFF;
+  --color-card-rgb: 255 255 255;
 
-  --color-muted: #FDE8CF;
-  --color-muted-rgb: 253 232 207;
+  --color-muted: #FDE2BD;
+  --color-muted-rgb: 253 226 189;
 
   --color-forest: #C2410C;
   --color-forest-rgb: 194 65 12;
   --color-forest-dark: #9A3412;
   --color-forest-light: #EA580C;
-  --color-forest-subtle: #FFEDD5;
+  --color-forest-subtle: #FED7AA;
 
   --color-sage: #D97706;
   --color-sage-rgb: 217 119 6;
@@ -128,36 +126,36 @@ body[data-theme="sunset"],
   --color-terracotta-light: #FED7AA;
   --color-terracotta-dark: #C2410C;
 
-  --color-ink-primary: #241306;
-  --color-ink-secondary: #5C381E;
-  --color-ink-muted: #8F6546;
+  --color-ink-primary: #2B1405;
+  --color-ink-secondary: #6B3B18;
+  --color-ink-muted: #9E633B;
 
-  --color-border: #F6D8B8;
-  --color-border-rgb: 246 216 184;
-  --color-border-subtle: #FDF0E1;
-  --color-border-strong: #E6B584;
+  --color-border: #F5CE9F;
+  --color-border-rgb: 245 206 159;
+  --color-border-subtle: #FDE8D0;
+  --color-border-strong: #E5A866;
 }
 
 html[data-theme="ocean"],
 body[data-theme="ocean"],
 .theme-ocean {
-  --color-bg: #EEF6FB;
-  --color-bg-rgb: 238 246 251;
+  --color-bg: #DFF0FA;
+  --color-bg-rgb: 223 240 250;
 
-  --color-surface: #FFFFFF;
-  --color-surface-rgb: 255 255 255;
+  --color-surface: #F0F8FC;
+  --color-surface-rgb: 240 248 252;
 
-  --color-card: #F8FCFF;
-  --color-card-rgb: 248 252 255;
+  --color-card: #FFFFFF;
+  --color-card-rgb: 255 255 255;
 
-  --color-muted: #D9EDF8;
-  --color-muted-rgb: 217 237 248;
+  --color-muted: #C5E4F5;
+  --color-muted-rgb: 197 228 245;
 
   --color-forest: #0284C7;
   --color-forest-rgb: 2 132 199;
   --color-forest-dark: #0369A1;
   --color-forest-light: #38BDF8;
-  --color-forest-subtle: #E0F2FE;
+  --color-forest-subtle: #BAE6FD;
 
   --color-sage: #0D9488;
   --color-sage-rgb: 13 148 136;
@@ -169,14 +167,14 @@ body[data-theme="ocean"],
   --color-terracotta-light: #BAE6FD;
   --color-terracotta-dark: #0369A1;
 
-  --color-ink-primary: #0A1C2E;
-  --color-ink-secondary: #2C4A63;
-  --color-ink-muted: #5B7E9C;
+  --color-ink-primary: #061D33;
+  --color-ink-secondary: #1E4E73;
+  --color-ink-muted: #497B9F;
 
-  --color-border: #CFE3F1;
-  --color-border-rgb: 207 227 241;
-  --color-border-subtle: #E5F1F8;
-  --color-border-strong: #A2C7E2;
+  --color-border: #A5D4EF;
+  --color-border-rgb: 165 212 239;
+  --color-border-subtle: #CDE8F7;
+  --color-border-strong: #72B8DF;
 }
 
 @layer base {

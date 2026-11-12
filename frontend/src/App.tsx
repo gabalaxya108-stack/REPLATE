@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
+import { ThemeSwitcher } from './components/common/ThemeSwitcher';
 import { Home } from './pages/Home';
 import { ExploreDonations } from './pages/ExploreDonations';
 import { Login } from './pages/Login';
@@ -18,7 +19,7 @@ export const App: React.FC = () => {
     <Router>
       <ThemeProvider>
         <AuthProvider>
-          <div className="flex flex-col min-h-screen bg-warm-bg text-ink-primary font-sans transition-colors duration-200">
+          <div className="flex flex-col min-h-screen bg-warm-bg text-ink-primary font-sans transition-colors duration-200 relative">
             <Navbar />
             <main className="flex-1">
               <Routes>
@@ -34,6 +35,11 @@ export const App: React.FC = () => {
               </Routes>
             </main>
             <Footer />
+
+            {/* Persistent Floating Theme Switcher — Accessible everywhere throughout the entire website */}
+            <aside aria-label="Persistent theme controller" className="fixed bottom-5 right-5 z-50 print:hidden shadow-elevated rounded-xl">
+              <ThemeSwitcher variant="floating" showLabel={false} />
+            </aside>
           </div>
         </AuthProvider>
       </ThemeProvider>

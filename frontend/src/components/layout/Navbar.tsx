@@ -55,7 +55,7 @@ export const Navbar: React.FC = () => {
             <span className="font-medium truncate">Surplus Food Recovery Platform • Aligned with FSSAI & NITI Aayog Darpan</span>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <ThemeSwitcher compactOnMobile />
+            <ThemeSwitcher showLabel={false} />
           </div>
         </div>
       </div>
