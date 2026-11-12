@@ -14,9 +14,12 @@ import {
 } from '../types/delivery';
 
 const rawBase = (import.meta as any).env?.VITE_API_BASE_URL || '/api/v1';
-const BASE_URL = rawBase.endsWith('/api/v1')
+const withProto = rawBase.startsWith('http') || rawBase.startsWith('/')
   ? rawBase
-  : (rawBase.endsWith('/') ? `${rawBase}api/v1` : `${rawBase}/api/v1`);
+  : `https://${rawBase}`;
+const BASE_URL = withProto.endsWith('/api/v1')
+  ? withProto
+  : (withProto.endsWith('/') ? `${withProto}api/v1` : `${withProto}/api/v1`);
 
 export class ApiError extends Error {
   status: number;

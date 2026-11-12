@@ -25,7 +25,6 @@ services:
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
-    plan: free
     routes:
       - type: rewrite
         source: /*
@@ -36,3 +35,4 @@ services:
           name: replate-backend
           type: web
           property: host
+
