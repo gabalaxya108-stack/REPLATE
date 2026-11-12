@@ -109,3 +109,4 @@ export interface ReportIssueRequest {
 export interface RejectAssignmentRequest {
   reason?: string;
 }
+

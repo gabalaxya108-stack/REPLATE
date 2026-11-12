@@ -101,3 +101,4 @@ public interface DeliveryTaskRepository extends JpaRepository<DeliveryTask, Long
             "ORDER BY d.createdAt DESC")
     List<DeliveryTask> findAvailableForAssignment();
 }
+

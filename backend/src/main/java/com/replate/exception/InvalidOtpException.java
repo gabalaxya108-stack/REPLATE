@@ -6,3 +6,4 @@ public class InvalidOtpException extends ReplateException {
         super(message, "INVALID_OTP");
     }
 }
+

@@ -32,3 +32,4 @@ public class ReportIssueDTO {
         this.notes = notes;
     }
 }
+

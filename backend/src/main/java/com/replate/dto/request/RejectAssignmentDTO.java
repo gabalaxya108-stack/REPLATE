@@ -18,3 +18,4 @@ public class RejectAssignmentDTO {
         this.reason = reason;
     }
 }
+

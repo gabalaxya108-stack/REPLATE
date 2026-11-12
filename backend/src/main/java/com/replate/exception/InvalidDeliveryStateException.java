@@ -6,3 +6,4 @@ public class InvalidDeliveryStateException extends ReplateException {
         super(message, "INVALID_DELIVERY_STATE");
     }
 }
+
