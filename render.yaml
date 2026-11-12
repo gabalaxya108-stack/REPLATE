@@ -1,0 +1,38 @@
+services:
+  # 1. Backend REST API (Spring Boot on Docker)
+  - type: web
+    name: replate-backend
+    runtime: docker
+    dockerContext: backend
+    dockerfilePath: backend/Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://ep-rough-fire-bffg17ke-pooler.c-5.us-west-2.aws.neon.tech/neondb?sslmode=require
+      - key: SPRING_DATASOURCE_USERNAME
+        value: neondb_owner
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: npg_W6BGhsyAHYQ0
+      - key: JWT_SECRET
+        generateValue: true
+
+  # 2. Frontend Web App (Vite + React Static Site on Global CDN)
+  - type: web
+    name: replate-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    plan: free
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          name: replate-backend
+          type: web
+          property: host

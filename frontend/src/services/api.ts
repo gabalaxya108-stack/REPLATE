@@ -13,7 +13,10 @@ import {
   RejectAssignmentRequest,
 } from '../types/delivery';
 
-const BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api/v1';
+const rawBase = (import.meta as any).env?.VITE_API_BASE_URL || '/api/v1';
+const BASE_URL = rawBase.endsWith('/api/v1')
+  ? rawBase
+  : (rawBase.endsWith('/') ? `${rawBase}api/v1` : `${rawBase}/api/v1`);
 
 export class ApiError extends Error {
   status: number;
